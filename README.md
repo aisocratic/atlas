@@ -93,5 +93,6 @@ Postgres 14+.
 
 ## License
 
-MIT © AI Socratic. Fonts are Geist and Geist Mono under the SIL Open Font
-License 1.1, self-hosted at build time.
+MIT © AI Socratic. The design system is [`@aisocratic/stoa`](https://www.npmjs.com/package/@aisocratic/stoa).
+Fonts are Space Grotesk, Newsreader and JetBrains Mono under the SIL Open Font
+License 1.1, loaded by the app.
