@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Atlas — a self-hostable engineering and web-ops dashboard</title>
+    <meta
+      name="description"
+      content="Atlas is an open-source, self-hostable dashboard that measures your site and your repo and keeps the results itself. It ships its own collectors — Lighthouse, SEO, region latency, repo metrics, releases — and owns the Postgres schema they write to."
+    />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0a0a0a" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Atlas" />
+    <meta property="og:url" content="https://aisocratic.github.io/atlas/" />
+    <meta
+      property="og:title"
+      content="Atlas — a self-hostable engineering and web-ops dashboard"
+    />
+    <meta
+      property="og:description"
+      content="A drag-to-arrange canvas of telemetry cards that ships its own collectors and owns the Postgres schema they write to. Point it at any Postgres, run one command, and the cards fill in."
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="Atlas — a self-hostable engineering and web-ops dashboard"
+    />
+    <meta
+      name="twitter:description"
+      content="A drag-to-arrange canvas of telemetry cards that ships its own collectors and owns the Postgres schema they write to."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400&display=swap"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230a0a0a'/%3E%3Crect x='3' y='3' width='4.5' height='4.5' rx='1' fill='%23fbbf24'/%3E%3Crect x='8.5' y='3' width='4.5' height='4.5' rx='1' fill='%23404040'/%3E%3Crect x='3' y='8.5' width='4.5' height='4.5' rx='1' fill='%23404040'/%3E%3Crect x='8.5' y='8.5' width='4.5' height='4.5' rx='1' fill='%23fbbf24'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap">
+        <a class="wordmark" href="./">
+          <svg class="mark" viewBox="0 0 16 16" aria-hidden="true">
+            <rect x="0" y="0" width="6.5" height="6.5" rx="1.5" fill="currentColor" />
+            <rect x="9.5" y="0" width="6.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.35" />
+            <rect x="0" y="9.5" width="6.5" height="6.5" rx="1.5" fill="currentColor" opacity="0.35" />
+            <rect x="9.5" y="9.5" width="6.5" height="6.5" rx="1.5" fill="currentColor" />
+          </svg>
+          Atlas
+        </a>
+        <nav class="nav" aria-label="Primary">
+          <a class="nav-hide" href="#cards">Cards</a>
+          <a class="nav-hide" href="#collectors">Collectors</a>
+          <a class="nav-hide" href="#data">Your data</a>
+          <a href="https://github.com/aisocratic/atlas">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <!-- ------------------------------------------------------------ hero -->
+      <section class="hero">
+        <div class="wrap">
+          <div class="hero-grid">
+            <div>
+              <p class="pill">
+                <span class="dot" aria-hidden="true"></span>
+                Early — not yet ready to run
+              </p>
+              <h1>
+                It measures your site and your repo,
+                <em>and keeps the results itself.</em>
+              </h1>
+              <p class="hero-sub">
+                Atlas is a self-hostable, drag-to-arrange canvas of telemetry
+                cards. Not a BI viewer you point at tables you already have: it
+                ships its own collectors and
+                <strong>owns the schema they write to</strong>. Point it at any
+                Postgres, run one command, and the cards fill in.
+              </p>
+              <div class="actions">
+                <a class="btn btn-primary" href="https://github.com/aisocratic/atlas">
+                  <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
+                    <path
+                      d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+                    />
+                  </svg>
+                  View on GitHub
+                </a>
+                <a class="btn btn-ghost" href="#cards">See the cards</a>
+              </div>
+            </div>
+
+            <div>
+              <div class="code-titled">
+                <div class="code-title"><span>quick start</span><span>~90s</span></div>
+                <pre class="code"><code>git clone https://github.com/aisocratic/atlas
+<span class="c-fn">cd</span> atlas &amp;&amp; pnpm install
+docker compose up -d db   <span class="c-dim"># or any Postgres 14+</span>
+pnpm setup                <span class="c-dim"># schema + migrations</span>
+pnpm collect region-latency seo-audit releases
+pnpm dev</code></pre>
+              </div>
+              <p class="hero-note">
+                Prefer to look before you install? <code>pnpm demo</code> renders
+                every card against fixture data and never opens a database
+                connection.
+              </p>
+            </div>
+          </div>
+
+          <!-- ------------------------------------------------- mock canvas -->
+          <div class="canvas-frame" role="img"
+            aria-label="Illustration of the Atlas dashboard: a grid of telemetry cards showing Lighthouse scores, Core Web Vitals sparklines, region latency bars, server errors, recent releases and detected anomalies.">
+            <div class="canvas-bar">
+              <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="path">localhost:3000</span>
+              <span class="spacer"></span>
+              <span class="fresh">collected 6 min ago</span>
+            </div>
+
+            <div class="canvas" aria-hidden="true">
+              <!-- lighthouse -->
+              <article class="tile span-4">
+                <div class="tile-head">
+                  <h3>Lighthouse</h3>
+                  <span>/ · mobile</span>
+                </div>
+                <div class="scores">
+                  <div class="score">
+                    <div class="ring">
+                      <svg viewBox="0 0 48 48">
+                        <circle class="track" cx="24" cy="24" r="20" fill="none" stroke-width="4" />
+                        <circle class="value s-ok" cx="24" cy="24" r="20" fill="none" stroke-width="4"
+                          stroke-dasharray="120.6 125.7" />
+                      </svg>
+                      <b class="t-ok">96</b>
+                    </div>
+                    <small>Perf</small>
+                  </div>
+                  <div class="score">
+                    <div class="ring">
+                      <svg viewBox="0 0 48 48">
+                        <circle class="track" cx="24" cy="24" r="20" fill="none" stroke-width="4" />
+                        <circle class="value s-ok" cx="24" cy="24" r="20" fill="none" stroke-width="4"
+                          stroke-dasharray="125.7 125.7" />
+                      </svg>
+                      <b class="t-ok">100</b>
+                    </div>
+                    <small>A11y</small>
+                  </div>
+                  <div class="score">
+                    <div class="ring">
+                      <svg viewBox="0 0 48 48">
+                        <circle class="track" cx="24" cy="24" r="20" fill="none" stroke-width="4" />
+                        <circle class="value s-warn" cx="24" cy="24" r="20" fill="none" stroke-width="4"
+                          stroke-dasharray="98.0 125.7" />
+                      </svg>
+                      <b class="t-warn">78</b>
+                    </div>
+                    <small>Best pr.</small>
+                  </div>
+                  <div class="score">
+                    <div class="ring">
+                      <svg viewBox="0 0 48 48">
+                        <circle class="track" cx="24" cy="24" r="20" fill="none" stroke-width="4" />
+                        <circle class="value s-ok" cx="24" cy="24" r="20" fill="none" stroke-width="4"
+                          stroke-dasharray="123.2 125.7" />
+                      </svg>
+                      <b class="t-ok">98</b>
+                    </div>
+                    <small>SEO</small>
+                  </div>
+                </div>
+                <p class="tile-foot">12 routes · lighthouse</p>
+              </article>
+
+              <!-- core web vitals -->
+              <article class="tile span-2">
+                <div class="tile-head">
+                  <h3>Core Web Vitals</h3>
+                  <span>28d</span>
+                </div>
+                <div class="vitals">
+                  <div class="vital">
+                    <span class="k">LCP</span>
+                    <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+                      <polygon fill="var(--ok)"
+                        points="0,30 0,17 12,15 24,16 36,13 48,6 60,8 72,20 84,12 100,11 100,30" />
+                      <polyline stroke="var(--ok)"
+                        points="0,17 12,15 24,16 36,13 48,6 60,8 72,20 84,12 100,11" />
+                    </svg>
+                    <span class="v t-ok">1.9s</span>
+                  </div>
+                  <div class="vital">
+                    <span class="k">INP</span>
+                    <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+                      <polygon fill="var(--warn)"
+                        points="0,30 0,20 12,22 24,18 36,19 48,14 60,17 72,11 84,15 100,13 100,30" />
+                      <polyline stroke="var(--warn)"
+                        points="0,20 12,22 24,18 36,19 48,14 60,17 72,11 84,15 100,13" />
+                    </svg>
+                    <span class="v t-warn">214ms</span>
+                  </div>
+                  <div class="vital">
+                    <span class="k">CLS</span>
+                    <svg class="spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+                      <polygon fill="var(--ok)"
+                        points="0,30 0,10 12,12 24,9 36,11 48,8 60,9 72,7 84,8 100,6 100,30" />
+                      <polyline stroke="var(--ok)"
+                        points="0,10 12,12 24,9 36,11 48,8 60,9 72,7 84,8 100,6" />
+                    </svg>
+                    <span class="v t-ok">0.04</span>
+                  </div>
+                </div>
+                <p class="tile-foot">field data · 41k samples</p>
+              </article>
+
+              <!-- region latency -->
+              <article class="tile span-2">
+                <div class="tile-head">
+                  <h3>Region latency</h3>
+                  <span>TTFB p50</span>
+                </div>
+                <div class="bars">
+                  <div class="bar t-ok">
+                    <span class="k">fra</span>
+                    <span class="track"><i style="width: 22%"></i></span>
+                    <span class="v">48ms</span>
+                  </div>
+                  <div class="bar t-ok">
+                    <span class="k">lhr</span>
+                    <span class="track"><i style="width: 30%"></i></span>
+                    <span class="v">67ms</span>
+                  </div>
+                  <div class="bar t-ok">
+                    <span class="k">iad</span>
+                    <span class="track"><i style="width: 46%"></i></span>
+                    <span class="v">102ms</span>
+                  </div>
+                  <div class="bar t-warn">
+                    <span class="k">sfo</span>
+                    <span class="track"><i style="width: 62%"></i></span>
+                    <span class="v">138ms</span>
+                  </div>
+                  <div class="bar t-warn">
+                    <span class="k">sin</span>
+                    <span class="track"><i style="width: 78%"></i></span>
+                    <span class="v">173ms</span>
+                  </div>
+                  <div class="bar t-bad">
+                    <span class="k">syd</span>
+                    <span class="track"><i style="width: 94%"></i></span>
+                    <span class="v">209ms</span>
+                  </div>
+                </div>
+                <p class="tile-foot">12 probes · region-latency</p>
+              </article>
+
+              <!-- errors -->
+              <article class="tile span-2">
+                <div class="tile-head">
+                  <h3>Server errors</h3>
+                  <span>24h</span>
+                </div>
+                <div class="metric">
+                  <b class="t-warn">0.31%</b>
+                  <span>of 84,120 requests</span>
+                </div>
+                <ul class="rows">
+                  <li><span class="name">ECONNRESET upstream</span><span class="meta">112</span></li>
+                  <li><span class="name">404 /api/data/traffic</span><span class="meta">47</span></li>
+                  <li><span class="name">timeout · pdf render</span><span class="meta">19</span></li>
+                </ul>
+                <p class="tile-foot">push-ingested</p>
+              </article>
+
+              <!-- releases -->
+              <article class="tile span-2">
+                <div class="tile-head">
+                  <h3>Releases</h3>
+                  <span>4.2 / wk</span>
+                </div>
+                <ul class="rows">
+                  <li><span class="name">v0.9.3</span><span class="meta">2h ago</span></li>
+                  <li><span class="name">v0.9.2</span><span class="meta">yesterday</span></li>
+                  <li><span class="name">v0.9.1</span><span class="meta">3d ago</span></li>
+                  <li><span class="name">v0.9.0</span><span class="meta">6d ago</span></li>
+                </ul>
+                <p class="tile-foot">releases</p>
+              </article>
+
+              <!-- code quality -->
+              <article class="tile span-2">
+                <div class="tile-head">
+                  <h3>Code quality</h3>
+                  <span>repo-metrics</span>
+                </div>
+                <div class="bars">
+                  <div class="bar t-ok">
+                    <span class="k">dup</span>
+                    <span class="track"><i style="width: 14%"></i></span>
+                    <span class="v">1.4%</span>
+                  </div>
+                  <div class="bar t-warn">
+                    <span class="k">cx&nbsp;p95</span>
+                    <span class="track"><i style="width: 58%"></i></span>
+                    <span class="v">17</span>
+                  </div>
+                  <div class="bar t-ok">
+                    <span class="k">deps</span>
+                    <span class="track"><i style="width: 26%"></i></span>
+                    <span class="v">6 old</span>
+                  </div>
+                </div>
+                <p class="tile-foot">last run 4h ago</p>
+              </article>
+
+              <!-- anomalies -->
+              <article class="tile span-4">
+                <div class="tile-head">
+                  <h3>Anomalies</h3>
+                  <span>derived</span>
+                </div>
+                <ul class="anoms">
+                  <li>
+                    <span class="arrow t-bad">↑</span>
+                    <span>LCP regressed on <code>/pricing</code>, 2.1s → 3.4s</span>
+                    <span class="when">· 21d ago</span>
+                  </li>
+                  <li>
+                    <span class="arrow t-bad">↑</span>
+                    <span>Error rate spiked to 1.8% for 40 min</span>
+                    <span class="when">· 5d ago</span>
+                  </li>
+                  <li>
+                    <span class="arrow t-ok">↓</span>
+                    <span>Duplication fell 3.1% → 1.4% after the dedupe</span>
+                    <span class="when">· 30d ago</span>
+                  </li>
+                </ul>
+                <p class="tile-foot">each line deep-links to the card that saw it</p>
+              </article>
+            </div>
+          </div>
+          <p class="canvas-caption">
+            The canvas is drag-to-arrange; layouts are saved per user.
+          </p>
+        </div>
+      </section>
+
+      <!-- ------------------------------------------------------- why it exists -->
+      <section class="section" id="why">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Why it exists</span>
+            <h2>Four decisions that shape everything else.</h2>
+          </div>
+
+          <div class="grid-4">
+            <div class="why">
+              <div class="rule rule-accent"></div>
+              <h3>It measures</h3>
+              <p>
+                Every card has a collector behind it.
+                <code>pnpm collect region-latency</code> writes rows; the card
+                reads them. No glue.
+              </p>
+            </div>
+            <div class="why">
+              <div class="rule"></div>
+              <h3>A card is one folder</h3>
+              <p>
+                <code>cards/&lt;id&gt;/</code> holds the component, the dataset
+                query, the collector and the explainer. Four files and one line
+                of config.
+              </p>
+            </div>
+            <div class="why">
+              <div class="rule"></div>
+              <h3>Zero keys on day one</h3>
+              <p>
+                Region latency, SEO audits and releases need no API keys. Three
+                datasets are live about ninety seconds after
+                <code>pnpm setup</code>.
+              </p>
+            </div>
+            <div class="why">
+              <div class="rule"></div>
+              <h3>You own the data</h3>
+              <p>
+                One Postgres schema, plain SQL, no ORM, no vendor.
+                <code>DROP SCHEMA atlas CASCADE</code> is a clean uninstall.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------------------------------------------- one card, one folder -->
+      <section class="section" id="anatomy">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Anatomy</span>
+            <h2>One card is one folder.</h2>
+            <p>
+              A card is not smeared across a route file, a barrel, an info map
+              and an anchor constant. It is a directory and one call to
+              <code>defineCard()</code>.
+            </p>
+          </div>
+
+          <div class="grid-2">
+            <div class="code-titled">
+              <div class="code-title"><span>cards/region-latency/</span></div>
+              <pre class="tree"><code><span class="d">cards/</span>
+└── <span class="d">region-latency/</span>
+    ├── <span class="f">cards.tsx</span>     <span class="c">the component</span>
+    ├── <span class="f">dataset.ts</span>    <span class="c">the SQL it reads</span>
+    ├── <span class="f">collector.ts</span>  <span class="c">what fills the table</span>
+    └── <span class="f">info.ts</span>       <span class="c">what it means</span></code></pre>
+            </div>
+
+            <div class="code-titled">
+              <div class="code-title"><span>cards.tsx</span></div>
+              <pre class="code"><code><span class="c-key">export default</span> <span class="c-fn">defineCard</span>({
+  id: <span class="c-str">"region-latency"</span>,
+  title: <span class="c-str">"Region latency"</span>,
+  category: <span class="c-str">"performance"</span>,
+  span: <span class="c-dim">2</span>,
+  dataset: <span class="c-str">"region-latency"</span>,
+  collector: <span class="c-str">"region-latency"</span>,
+  info,
+  component: () <span class="c-key">=&gt;</span> <span class="c-fn">import</span>(<span class="c-str">"./view"</span>),
+  requires: (env) <span class="c-key">=&gt;</span> env.site.url,
+  optIn: <span class="c-dim">false</span>,
+})</code></pre>
+            </div>
+          </div>
+
+          <div class="callout">
+            <p>
+              A card whose <code>requires</code> is not met
+              <strong>stays on the grid and says why</strong>, rather than
+              vanishing. Cards you don't need are one line in
+              <code>atlas.config.ts</code> to disable.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ------------------------------------------------------------- cards -->
+      <section class="section" id="cards">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">The cards</span>
+            <h2>Nine groups, and the collector behind each.</h2>
+          </div>
+
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Group</th>
+                  <th scope="col">What it shows</th>
+                  <th scope="col">Collector</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Performance</th>
+                  <td class="what">Lighthouse scores, Core Web Vitals per route</td>
+                  <td><span class="tag">lighthouse</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Real users</th>
+                  <td class="what">Field LCP / INP / CLS from a tiny beacon</td>
+                  <td><span class="tag tag-muted">push-ingested</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">SEO</th>
+                  <td class="what">Per-page audit findings and score history</td>
+                  <td><span class="tag">seo-audit</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Region latency</th>
+                  <td class="what">TTFB from a dozen regions, via Globalping</td>
+                  <td><span class="tag">region-latency</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Code quality</th>
+                  <td class="what">Duplication, complexity, dependency health</td>
+                  <td><span class="tag">repo-metrics</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Releases</th>
+                  <td class="what">Deploy cadence and what shipped when</td>
+                  <td><span class="tag">releases</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">Errors</th>
+                  <td class="what">Server error rate and top messages</td>
+                  <td><span class="tag tag-muted">push-ingested</span></td>
+                </tr>
+                <tr>
+                  <th scope="row">AI usage</th>
+                  <td class="what">Token spend across coding-agent CLIs</td>
+                  <td>
+                    <span class="tag">ai-usage</span>
+                    <span class="tag tag-muted">opt-in</span>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">Anomalies</th>
+                  <td class="what">
+                    What changed, deep-linked to the card that saw it
+                  </td>
+                  <td><span class="tag tag-muted">derived</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="table-note">
+            Configuration is one file, <code>atlas.config.ts</code> at the repo
+            root: your site URL, which cards are enabled, and any overrides. The
+            database is one variable, <code>DATABASE_URL</code>.
+          </p>
+        </div>
+      </section>
+
+      <!-- -------------------------------------------------------- collectors -->
+      <section class="section" id="collectors">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Collectors</span>
+            <h2>Six collectors, three ways to run them.</h2>
+            <p>
+              <code>pnpm collect &lt;id&gt;</code>,
+              <code>POST /api/collect/&lt;id&gt;</code>, or cron. Every run is
+              wrapped in a <code>collector_runs</code> row, so freshness on the
+              cards is measured, not assumed — and a second run says “already
+              running” instead of double-firing.
+            </p>
+          </div>
+
+          <div class="collectors">
+            <article class="collector">
+              <div class="collector-top">
+                <h3>region-latency</h3>
+                <span class="eta">~15s</span>
+              </div>
+              <p>TTFB probes from a dozen regions, via Globalping.</p>
+              <p class="needs">Needs <b>nothing</b> — free and keyless.</p>
+            </article>
+
+            <article class="collector">
+              <div class="collector-top">
+                <h3>seo-audit</h3>
+                <span class="eta">~60s</span>
+              </div>
+              <p>Per-page audit findings and score history.</p>
+              <p class="needs">Needs <b>your site URL</b>.</p>
+            </article>
+
+            <article class="collector">
+              <div class="collector-top">
+                <h3>lighthouse</h3>
+                <span class="eta">~15min</span>
+              </div>
+              <p>Scores and Core Web Vitals, route by route.</p>
+              <p class="needs">Needs <b>a PageSpeed key</b> — optional.</p>
+            </article>
+
+            <article class="collector">
+              <div class="collector-top">
+                <h3>releases</h3>
+                <span class="eta">~10s</span>
+              </div>
+              <p>Deploy cadence and what shipped when.</p>
+              <p class="needs">Needs <b>a GitHub repo</b>.</p>
+            </article>
+
+            <article class="collector">
+              <div class="collector-top">
+                <h3>repo-metrics</h3>
+                <span class="eta">~4min</span>
+              </div>
+              <p>Duplication, complexity and dependency health.</p>
+              <p class="needs">Needs <b>a checkout</b> of the repo.</p>
+            </article>
+
+            <article class="collector">
+              <div class="collector-top">
+                <h3>ai-usage</h3>
+                <span class="eta">~5s</span>
+              </div>
+              <p>Token spend across coding-agent CLIs.</p>
+              <p class="needs">Needs <b>the local machine</b> — opt-in.</p>
+            </article>
+          </div>
+
+          <div class="callout">
+            <p>
+              <strong>Zero keys on day one.</strong> Region latency, SEO audits
+              and releases need no API keys at all — three datasets are live
+              about ninety seconds after <code>pnpm setup</code>. Errors, web
+              vitals and page views have no collector: they are push-ingested by
+              a beacon.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- -------------------------------------------------------------- data -->
+      <section class="section" id="data">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Your data, your box</span>
+            <h2>A schema, not a database.</h2>
+            <p>
+              Atlas creates one Postgres schema — <code>atlas</code> by default —
+              so it can live inside a database that already has two hundred
+              tables without colliding with any of them. Plain SQL, no ORM, no
+              vendor. <code>DROP SCHEMA atlas CASCADE</code> is a clean
+              uninstall.
+            </p>
+          </div>
+
+          <h3 class="eyebrow" id="auth-heading">Three auth adapters ship</h3>
+          <dl class="adapters" aria-labelledby="auth-heading">
+            <div class="adapter">
+              <dt>open</dt>
+              <dd>
+                The default, so <code>pnpm dev</code> works with no
+                configuration.
+                <span class="flag">It refuses to serve in production</span> — the
+                app boots to the setup screen instead of quietly exposing your
+                telemetry.
+              </dd>
+            </div>
+            <div class="adapter">
+              <dt>password</dt>
+              <dd>
+                One shared password. No extra table, no extra dependency, and the
+                out-of-the-box answer for a small self-hosted deployment.
+              </dd>
+            </div>
+            <div class="adapter">
+              <dt>header</dt>
+              <dd>
+                A trusted identity header, for running behind Cloudflare Access,
+                oauth2-proxy, Authelia or Tailscale — where the gateway has
+                already done the authenticating.
+              </dd>
+            </div>
+          </dl>
+
+          <div class="callout">
+            <p>
+              Collectors are triggered with a session or a bearer secret, so a
+              cron sidecar can refresh a card without a browser anywhere in the
+              picture.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ----------------------------------------------------------- roadmap -->
+      <section class="section" id="roadmap">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Roadmap</span>
+            <h2>Nothing is shipped yet.</h2>
+            <p>
+              Atlas is being built in the open and phases land incrementally. It
+              is not yet ready to run.
+            </p>
+          </div>
+
+          <ol class="roadmap">
+            <li>
+              <span class="box" aria-hidden="true"></span>
+              <span class="n">Phase 0</span>
+              <span class="what">Scaffold, design substrate, one rendered card</span>
+            </li>
+            <li>
+              <span class="box" aria-hidden="true"></span>
+              <span class="n">Phase 1</span>
+              <span class="what">Vendored UI substrate, fonts, tokens</span>
+            </li>
+            <li>
+              <span class="box" aria-hidden="true"></span>
+              <span class="n">Phase 2</span>
+              <span class="what">Storage: pool, migrations, the seventeen tables</span>
+            </li>
+            <li>
+              <span class="box" aria-hidden="true"></span>
+              <span class="n">Phase 3</span>
+              <span class="what">The frame: canvas layout, cache, saved arrangements</span>
+            </li>
+            <li>
+              <span class="box" aria-hidden="true"></span>
+              <span class="n">Phase 4</span>
+              <span class="what">The card registry and the two generic routes</span>
+            </li>
+            <li>
+              <span class="box" aria-hidden="true"></span>
+              <span class="n">Phase 5</span>
+              <span class="what">First vertical slice: region latency</span>
+            </li>
+            <li>
+              <span class="box" aria-hidden="true"></span>
+              <span class="n">Phase 6</span>
+              <span class="what">The remaining cards</span>
+            </li>
+            <li>
+              <span class="box" aria-hidden="true"></span>
+              <span class="n">Phase 7</span>
+              <span class="what">Demo mode, seed data, fixtures</span>
+            </li>
+            <li>
+              <span class="box" aria-hidden="true"></span>
+              <span class="n">Phase 8</span>
+              <span class="what">Auth adapters and the setup screen</span>
+            </li>
+            <li>
+              <span class="box" aria-hidden="true"></span>
+              <span class="n">Phase 9</span>
+              <span class="what">Packaging and <code>v0.1.0</code></span>
+            </li>
+          </ol>
+
+          <div class="actions">
+            <a class="btn btn-primary" href="https://github.com/aisocratic/atlas"
+              >Follow along on GitHub</a
+            >
+            <a
+              class="btn btn-ghost"
+              href="https://github.com/aisocratic/atlas/blob/main/CONTRIBUTING.md"
+              >Contributing</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-grid">
+        <p>
+          MIT licensed · built by
+          <a href="https://aisocratic.org">AI Socratic</a>
+        </p>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="https://github.com/aisocratic/atlas">Repository</a>
+          <a href="https://github.com/aisocratic/atlas/blob/main/LICENSE">License</a>
+          <a href="https://github.com/aisocratic/atlas/blob/main/SECURITY.md">Security</a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>
