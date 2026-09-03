@@ -1156,19 +1156,30 @@ table {
   font-size: var(--text-body);
 }
 
-/* Table heads are eyebrows. */
+/* Stoa's table chrome (table-parts.tsx): a muted head band with mono
+   micro labels, hairline rows, a faint hover on body rows. */
+thead tr {
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
 thead th {
-  position: relative;
   text-align: left;
+  font-family: var(--font-code);
   font-size: var(--text-micro);
   line-height: var(--text-micro--line-height);
-  font-weight: 500;
-  letter-spacing: var(--tracking-eyebrow);
-  text-transform: uppercase;
+  font-weight: 400;
   color: var(--muted-foreground);
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+}
+
+tbody tr {
+  transition: background-color 0.15s ease-out;
+}
+
+tbody tr:hover {
+  background: color-mix(in srgb, var(--muted) 30%, transparent);
 }
 
 tbody td {
