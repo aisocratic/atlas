@@ -9,7 +9,8 @@
       content="Atlas is an open-source, self-hostable dashboard that measures your site and your repo and keeps the results itself. It ships its own collectors — Lighthouse, SEO, region latency, repo metrics, releases — and owns the Postgres schema they write to."
     />
     <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f2e8" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Atlas" />
@@ -32,6 +33,15 @@
       content="A drag-to-arrange canvas of telemetry cards that ships its own collectors and owns the Postgres schema they write to."
     />
 
+    <!-- Stoa serves the OS theme from the stylesheet alone; a stored choice is
+         pinned with data-theme on <html> before first paint so nothing flashes. -->
+    <script>
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -45,8 +55,10 @@
   <body>
     <a class="skip" href="#main">Skip to content</a>
 
-    <header class="site-header">
-      <div class="page-shell">
+    <!-- Stoa's SiteHeader: out of flow, brand left, text-nav links centred on
+         the bar, actions right. 104px tall, so the hero takes `lead`. -->
+    <div class="site-header">
+      <header class="page-shell site-bar">
         <div class="brand">
           <a class="lockup" href="https://aisocratic.org" aria-label="AI Socratic">
             <svg viewBox="0 0 2822 796" aria-hidden="true" focusable="false">
@@ -64,14 +76,49 @@
           </a>
           <a class="product" href="./">/&nbsp;<b>atlas</b></a>
         </div>
-        <nav class="nav" aria-label="Primary">
-          <a class="nav-hide" href="#cards">Cards</a>
-          <a class="nav-hide" href="#collectors">Collectors</a>
-          <a class="nav-hide" href="#data">Your data</a>
-          <a class="btn btn-cta" href="https://github.com/aisocratic/atlas">GitHub</a>
+
+        <nav class="site-nav" aria-label="Primary">
+          <a class="nav-link" href="#cards">Cards</a>
+          <a class="nav-link" href="#collectors">Collectors</a>
+          <a class="nav-link" href="#data">Your data</a>
+          <a class="nav-link" href="#roadmap">Roadmap</a>
         </nav>
-      </div>
-    </header>
+
+        <div class="site-actions">
+          <a class="btn btn-cta btn-sm" href="https://github.com/aisocratic/atlas">GitHub</a>
+          <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Toggle theme" data-theme-toggle>
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="sun"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
+            </button>
+        </div>
+
+        <div class="site-menu">
+          <button class="theme-toggle" type="button" id="theme-toggle-mobile" aria-label="Toggle theme" data-theme-toggle>
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="sun"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
+            </button>
+          <button class="icon-btn" type="button" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="menu"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="x"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          </button>
+        </div>
+      </header>
+    </div>
+
+    <!-- Stoa's MobileMenu: a non-modal panel under the header, with its own
+         surface. The overlay closes it; the header stays clickable above it. -->
+    <div class="menu-overlay" id="menu-overlay" hidden></div>
+    <div class="mobile-menu" id="mobile-menu" hidden>
+      <nav class="page-shell mobile-nav" aria-label="Menu">
+        <a href="#cards">Cards</a>
+        <a href="#collectors">Collectors</a>
+        <a href="#data">Your data</a>
+        <a href="#roadmap">Roadmap</a>
+        <div class="mobile-nav-foot">
+          <a href="https://github.com/aisocratic/atlas">GitHub</a>
+        </div>
+      </nav>
+    </div>
 
     <main id="main">
       <!-- ------------------------------------------------------------ hero -->
@@ -369,7 +416,7 @@ pnpm dev</code></pre>
       <section class="section" id="why">
         <div class="page-shell">
           <div class="section-head">
-            <span class="eyebrow">Why it exists</span>
+            <span class="text-eyebrow">Why it exists</span>
             <h2>Four decisions that shape everything else.</h2>
           </div>
 
@@ -417,7 +464,7 @@ pnpm dev</code></pre>
       <section class="section" id="anatomy">
         <div class="page-shell">
           <div class="section-head">
-            <span class="eyebrow">Anatomy</span>
+            <span class="text-eyebrow">Anatomy</span>
             <h2>One card is one folder.</h2>
             <p>
               A card is not smeared across a route file, a barrel, an info map
@@ -469,7 +516,7 @@ pnpm dev</code></pre>
       <section class="section" id="cards">
         <div class="page-shell">
           <div class="section-head">
-            <span class="eyebrow">The cards</span>
+            <span class="text-eyebrow">The cards</span>
             <h2>Nine groups, and the collector behind each.</h2>
           </div>
 
@@ -549,7 +596,7 @@ pnpm dev</code></pre>
       <section class="section" id="collectors">
         <div class="page-shell">
           <div class="section-head">
-            <span class="eyebrow">Collectors</span>
+            <span class="text-eyebrow">Collectors</span>
             <h2>Six collectors, three ways to run them.</h2>
             <p>
               <code>pnpm collect &lt;id&gt;</code>,
@@ -632,7 +679,7 @@ pnpm dev</code></pre>
       <section class="section" id="data">
         <div class="page-shell">
           <div class="section-head">
-            <span class="eyebrow">Your data, your box</span>
+            <span class="text-eyebrow">Your data, your box</span>
             <h2>A schema, not a database.</h2>
             <p>
               Atlas creates one Postgres schema — <code>atlas</code> by default —
@@ -643,7 +690,7 @@ pnpm dev</code></pre>
             </p>
           </div>
 
-          <h3 class="eyebrow" id="auth-heading">Three auth adapters ship</h3>
+          <h3 class="text-eyebrow" id="auth-heading">Three auth adapters ship</h3>
           <dl class="adapters" aria-labelledby="auth-heading">
             <div class="adapter">
               <dt>open</dt>
@@ -686,7 +733,7 @@ pnpm dev</code></pre>
       <section class="section" id="roadmap">
         <div class="page-shell">
           <div class="section-head">
-            <span class="eyebrow">Roadmap</span>
+            <span class="text-eyebrow">Roadmap</span>
             <h2>Nothing is shipped yet.</h2>
             <p>
               Atlas is being built in the open and phases land incrementally. It
@@ -761,18 +808,120 @@ pnpm dev</code></pre>
       </section>
     </main>
 
+    <!-- Stoa's SiteFooter: brand column, eyebrow-headed link columns, then a
+         full-bleed rule and the bottom bar. -->
     <footer class="site-footer">
-      <div class="page-shell footer-grid">
-        <p>
-          MIT licensed · built by
-          <a href="https://aisocratic.org">AI Socratic</a>
-        </p>
-        <nav class="footer-links" aria-label="Footer">
-          <a href="https://github.com/aisocratic/atlas">Repository</a>
-          <a href="https://github.com/aisocratic/atlas/blob/main/LICENSE">License</a>
-          <a href="https://github.com/aisocratic/atlas/blob/main/SECURITY.md">Security</a>
-        </nav>
+      <div class="page-shell footer-top">
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <a class="lockup" href="https://aisocratic.org" aria-label="AI Socratic">
+              <svg viewBox="0 0 2822 796" aria-hidden="true" focusable="false">
+              <defs>
+                <linearGradient id="brand-ring-footer" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#7c3aed" />
+                  <stop offset="35%" stop-color="#a855f7" />
+                  <stop offset="65%" stop-color="#ec4899" />
+                  <stop offset="100%" stop-color="#f472b6" />
+                </linearGradient>
+              </defs>
+              <path d="M415 50c192.195 0 348 155.805 348 348S607.195 746 415 746 67 590.195 67 398 222.805 50 415 50m0 103c-135.31 0-245 109.69-245 245s109.69 245 245 245 245-109.69 245-245-109.69-245-245-245" fill="url(#brand-ring-footer)" />
+              <path d="m844 591 78.6-354.6h48.6l77.4 354.6h-40.8l-19.2-82.2h-87l-18 82.2zm58.8-103.2H988l-42-205.2zM1095.46 591V236.4h37.8V591zm295.82 4.2q-27 0-46.8-9.6-19.2-9.6-30-31.8-10.8-22.8-10.8-63V471h38.4v22.2q0 30 6 46.8 6.6 16.2 17.4 22.8 11.4 6.6 25.8 6.6 23.4 0 37.8-14.4 15-15 15-52.8 0-27-7.8-40.2-7.8-13.8-24-21.6-16.2-8.4-39.6-18-19.2-7.8-34.8-18.6-15-11.4-23.4-29.4t-8.4-45.6q0-31.2 8.4-51.6 8.4-21 27.6-31.2t51-10.2q41.4 0 63.6 21 22.8 20.4 22.8 58.2v39h-37.2v-30q0-28.8-12.6-43.2-12-15-36-15-26.4 0-38.4 15.6-11.4 15-11.4 46.2 0 23.4 9 37.2 9 13.2 23.4 21 14.4 7.2 30.6 13.2 27 10.2 43.8 21.6 16.8 10.8 24.6 28.2t7.8 48.6q0 36.6-12 58.2-11.4 21-32.4 30.6-20.4 9-47.4 9m220.82 0q-27.6 0-46.2-7.2-18-7.8-27-27-8.4-19.2-8.4-52.8V369.6q0-43.2 18.6-61.8 19.2-18.6 63-18.6t62.4 18q19.2 18 19.2 62.4v138.6q0 33.6-8.4 52.8-8.4 18.6-26.4 26.4t-46.8 7.8m0-23.4q24 0 34.2-12t10.2-43.8V367.8q0-29.4-9.6-42-9.6-13.2-34.8-13.2-23.4 0-34.2 12.6-10.2 12-10.2 42.6V516q0 31.2 10.2 43.8 10.8 12 34.2 12m213.32 24.6q-29.4 0-48-6.6-18.6-7.2-27-25.2-8.4-18.6-8.4-54V364.2q0-43.8 18.6-59.4 19.2-16.2 63-16.2 42.6 0 61.2 15.6 19.2 15.6 19.2 57.6v39h-37.2v-40.2q0-25.8-8.4-37.2-8.4-12-34.8-12t-35.4 12q-9 11.4-9 37.2v159.6q0 28.8 9 40.8 9 11.4 36.6 11.4 25.2 0 33.6-11.4t8.4-40.8V480h37.2v30.6q0 34.2-8.4 52.8t-25.8 25.8-44.4 7.2m131.81-5.4V294h31.2l4.2 31.8q6.6-16.8 21.6-24t30-9q16.8-3.6 32.4-.6v29.4q-2.4-.6-8.4-1.2t-13.2-.6q-6.6 0-12.6 2.4-20.4 2.4-34.2 15-13.8 12-13.8 33V591zm205.76 4.2q-13.8 0-28.2-4.2-13.8-3.6-24-17.4-9.6-14.4-9.6-44.4v-28.8q0-30 18-48 18.6-18.6 50.4-33 20.4-10.2 33-18 13.2-7.8 19.8-17.4t6.6-25.8v-12.6q0-14.4-6-22.2t-16.2-10.8q-9.6-3-20.4-3-27 0-35.4 15-8.4 14.4-8.4 43.2V393h-34.2v-28.8q0-22.2 6-39 6-17.4 22.8-27 16.8-10.2 49.2-10.2 34.2 0 51 7.8 17.4 7.8 22.8 22.2 6 14.4 6 34.2V591h-36.6l-.6-37.2q-7.2 20.4-25.8 31.2-18.6 10.2-40.2 10.2m13.8-25.2q27 0 39-19.2 12.6-19.2 12.6-51V405q-6 9.6-19.8 17.4t-28.2 15.6q-20.4 12-31.8 25.2-10.8 12.6-10.8 35.4V522q0 21.6 6 31.8t15 13.2 18 3m212.02 21.6q-13.2 0-24-3t-18.6-9.6q-7.8-7.2-12-18-4.2-11.4-4.2-28.2V317.4h-26.4v-19.2l28.8-4.2 6.6-55.8h28.2V294h64.2v23.4h-64.2v208.8q0 16.8 6 28.2t26.4 11.4q8.4 0 18-.6 9.6-1.2 13.8-1.2v24q-4.8 0-16.8 1.8t-25.8 1.8m81.12-.6V294h36.6v297zm18.6-333.6q-9 0-15.6-6-6-6.6-6-15 0-9 6-14.4 6.6-6 15.6-6 8.4 0 15 6 6.6 5.4 6.6 14.4 0 8.4-6.6 15-6.6 6-15 6m157.79 339q-29.4 0-48-6.6-18.6-7.2-27-25.2-8.4-18.6-8.4-54V364.2q0-43.8 18.6-59.4 19.2-16.2 63-16.2 42.6 0 61.2 15.6 19.2 15.6 19.2 57.6v39h-37.2v-40.2q0-25.8-8.4-37.2-8.4-12-34.8-12t-35.4 12q-9 11.4-9 37.2v159.6q0 28.8 9 40.8 9 11.4 36.6 11.4 25.2 0 33.6-11.4t8.4-40.8V480h37.2v30.6q0 34.2-8.4 52.8t-25.8 25.8-44.4 7.2" fill="currentColor" />
+            </svg>
+            </a>
+            <p>
+              A self-hostable engineering and web-ops dashboard that measures
+              your site and your repo, and keeps the results itself.
+            </p>
+          </div>
+          <div>
+            <h4 class="text-eyebrow">Atlas</h4>
+            <ul>
+              <li><a href="#cards">Cards</a></li>
+              <li><a href="#collectors">Collectors</a></li>
+              <li><a href="#data">Your data</a></li>
+              <li><a href="#roadmap">Roadmap</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-eyebrow">Project</h4>
+            <ul>
+              <li><a href="https://github.com/aisocratic/atlas">Repository</a></li>
+              <li><a href="https://github.com/aisocratic/atlas/blob/main/CONTRIBUTING.md">Contributing</a></li>
+              <li><a href="https://github.com/aisocratic/atlas/blob/main/SECURITY.md">Security</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-eyebrow">Family</h4>
+            <ul>
+              <li><a href="https://aisocratic.org">aisocratic.org</a></li>
+              <li><a href="https://www.npmjs.com/package/@aisocratic/stoa">Stoa</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="page-shell footer-bar">
+          <p>MIT © AI Socratic</p>
+          <div class="footer-bar-links">
+            <a href="https://github.com/aisocratic/atlas/blob/main/LICENSE">Licence</a>
+            <a href="https://aisocratic.org/brand">Brand</a>
+            <span class="footer-social">
+              <a href="https://github.com/aisocratic/atlas" aria-label="GitHub"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="github"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg></a>
+            </span>
+          </div>
+        </div>
       </div>
     </footer>
+
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var mql = window.matchMedia("(prefers-color-scheme: dark)");
+
+        // ---- theme toggle: pins data-theme on <html>, remembers it -------
+        function isDark() {
+          return root.dataset.theme ? root.dataset.theme === "dark" : mql.matches;
+        }
+        function label() {
+          var next = isDark() ? "light" : "dark";
+          document.querySelectorAll("[data-theme-toggle]").forEach(function (b) {
+            b.setAttribute("aria-label", "Switch to " + next + " mode");
+          });
+        }
+        document.querySelectorAll("[data-theme-toggle]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var next = isDark() ? "light" : "dark";
+            root.dataset.theme = next;
+            try { localStorage.setItem("theme", next); } catch (e) {}
+            label();
+          });
+        });
+        mql.addEventListener("change", label);
+        label();
+
+        // ---- mobile menu ---------------------------------------------------
+        var toggle = document.getElementById("menu-toggle");
+        var panel = document.getElementById("mobile-menu");
+        var overlay = document.getElementById("menu-overlay");
+        function setOpen(open) {
+          panel.hidden = !open;
+          overlay.hidden = !open;
+          toggle.setAttribute("aria-expanded", String(open));
+          toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+          root.classList.toggle("menu-open", open);
+        }
+        toggle.addEventListener("click", function () { setOpen(panel.hidden); });
+        overlay.addEventListener("click", function () { setOpen(false); });
+        panel.querySelectorAll("a").forEach(function (a) {
+          a.addEventListener("click", function () { setOpen(false); });
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && !panel.hidden) setOpen(false);
+        });
+        window.matchMedia("(min-width: 64rem)").addEventListener("change", function (e) {
+          if (e.matches && !panel.hidden) setOpen(false);
+        });
+      })();
+    </script>
   </body>
 </html>
