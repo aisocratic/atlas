@@ -11,7 +11,8 @@ at any Postgres, run one command, and the cards fill in.
 
 > **Status: early.** Atlas is being extracted from a private codebase where it
 > has run in daily use. Phases land incrementally — see [the roadmap](#roadmap).
-> Not yet ready to run.
+> The interactive dashboard canvas runs today on GitHub Pages with sample data.
+> Collectors and the backend are not implemented yet.
 
 ## Why it exists
 
@@ -27,9 +28,10 @@ at any Postgres, run one command, and the cards fill in.
 
 ## Run the website
 
-The runnable part of this repository is the static project website and dashboard
-illustration in `site/`. The application, database, and collectors below describe
-the intended product and are not implemented yet.
+The runnable part is the project website and interactive dashboard canvas in
+`site/`. Create named dashboard tabs, drag and resize cards, and return to your
+saved layouts. Metrics are sample data; the database and collectors below
+describe the intended product and are not implemented yet.
 
 ```bash
 git clone https://github.com/aisocratic/atlas && cd atlas
@@ -37,11 +39,32 @@ python3 -m http.server 4175 --directory site
 ```
 
 Open http://localhost:4175. No Node dependencies, database, or sibling repository
-are needed. The dashboard preview uses illustrative data.
+are needed. Serve over HTTP as shown so the browser can load JavaScript modules.
+The dashboard uses illustrative data.
 
 [Website](https://aisocratic.github.io/atlas/) ·
 [Shared design](https://aisocratic.github.io/stoa/) ·
 [Agora](https://aisocratic.github.io/agora/)
+
+## Dashboard controls
+
+- **New dashboard** creates and selects an independent layout with the sample cards.
+- **Rename** changes the active dashboard name without changing its layout.
+- **Edit layout** exposes Move handles, size controls, and resize corners. On a
+  desktop, cards move on a 12-column grid; occupied cards move down to make room.
+- Drag a Move handle or use its arrow keys. The ↑ / ↓ buttons change reading
+  order without dragging. On small screens, cards form a single column and
+  dragging changes their order; desktop widths are retained.
+- Drag a resize corner or use its arrow keys. Width/height menus provide the
+  same controls without dragging; mobile layouts use full available width.
+- **Undo** (also Ctrl/⌘+Z while editing) reverses the last change. **Tidy layout**
+  fills empty spaces. **Done** hides editing controls.
+
+Layouts, names, and the active tab save to this browser's local storage. They
+survive reloads on the same origin but do not sync across devices or users.
+Storage errors are shown in the toolbar; in that case edits remain in memory.
+Unreadable old saves are preserved rather than overwritten. The storage adapter
+in `site/dashboard/storage.mjs` is separate from the canvas state model.
 
 ## Planned cards
 
@@ -100,17 +123,33 @@ Refresh an unpublished local build and verify the checked-in dependency:
 # In a Stoa checkout: pnpm install && pnpm build
 node site/scripts/sync-design.mjs ../stoa
 node site/scripts/sync-design.mjs --check
+node --test tests/dashboard.test.mjs
 ```
 
 For a published release, use `node site/scripts/sync-design.mjs --version X.Y.Z`.
 The checked-in stylesheet keeps a clean clone independent of package availability
 and sibling checkouts. Commit the stylesheet and metadata together when updating.
 
+Browser regression tests use Playwright as a development-only dependency:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+The suite starts its own static server and covers desktop and mobile input.
+To use an installed Chrome instead of downloading Chromium, run
+`PLAYWRIGHT_CHANNEL=chrome pnpm test:e2e`.
+
 Before a pull request, run the integrity check, serve `site/`, and check desktop
 and mobile layouts, navigation, and the dark → light → system theme cycle.
-The Pages workflow verifies integrity and deploys `site/` when changes reach
-`main`. Application tests and database commands will arrive with their roadmap
-phases; there are no `pnpm dev`, `pnpm setup`, or collector commands yet.
+The Pages workflow runs the canvas/state/storage tests, verifies design integrity,
+and deploys `site/` when changes reach `main`. The tests cover independent boards,
+collision handling, resize bounds, keyboard/button ordering, persistence, and
+storage failures. Browser checks cover actual tab, dialog, drag, resize, theme,
+and mobile interactions. There are no `pnpm dev`, `pnpm setup`, or collector
+commands yet.
 
 ## License
 

@@ -132,26 +132,44 @@
           </p>
           <div class="actions">
             <a class="btn btn-primary" href="https://github.com/aisocratic/atlas">View on GitHub</a>
-            <a class="btn btn-outline" href="#cards">Explore the cards</a>
+            <a class="btn btn-outline" href="#workspace">Open the dashboard</a>
           </div>
-          <p class="hero-status"><span class="pill"><span class="dot" aria-hidden="true"></span>In development · dashboard preview</span></p>
+          <p class="hero-status"><span class="pill"><span class="dot" aria-hidden="true"></span>Interactive canvas · sample data</span></p>
         </div>
       </section>
-      <section class="preview-section" aria-label="Dashboard preview">
+      <section class="preview-section" id="workspace" aria-labelledby="workspace-title">
         <div class="page-shell">
           <!-- ------------------------------------------------- mock canvas -->
-          <div class="canvas-frame" role="img"
-            aria-label="Illustration of the Atlas dashboard: a grid of telemetry cards showing Lighthouse scores, Core Web Vitals sparklines, region latency bars, server errors, recent releases and detected anomalies.">
+          <div class="workspace-heading">
+            <div><p class="text-eyebrow">Your workspace</p><h2 id="workspace-title">Make room for what matters.</h2></div>
+            <p>Arrange these sample cards into dashboards of your own.</p>
+          </div>
+          <div class="canvas-frame" id="dashboard-workspace">
+            <div class="dashboard-toolbar" id="dashboard-toolbar" hidden>
+              <div class="dashboard-tabs" role="tablist" aria-label="Dashboards" id="dashboard-tabs"></div>
+              <div class="dashboard-actions">
+                <button class="btn btn-outline btn-sm" id="dashboard-create" type="button">+ New dashboard</button>
+                <button class="btn btn-outline btn-sm" id="dashboard-rename" type="button">Rename</button>
+                <button class="btn btn-primary btn-sm" id="dashboard-edit" type="button" aria-pressed="false">Edit layout</button>
+              </div>
+            </div>
+            <div class="dashboard-edit-bar" id="dashboard-edit-bar" hidden>
+              <p id="dashboard-instructions">Drag a card’s Move handle; drag its corner to resize. Arrow keys on either handle work too. On phones, move cards up or down.</p>
+              <div class="dashboard-actions">
+                <button class="btn btn-outline btn-sm" id="dashboard-undo" type="button" disabled>Undo</button>
+                <button class="btn btn-outline btn-sm" id="dashboard-tidy" type="button">Tidy layout</button>
+              </div>
+            </div>
             <div class="canvas-bar">
               <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
-              <span class="path">localhost:3000</span>
+              <span class="path">Sample data</span>
               <span class="spacer"></span>
-              <span class="fresh">collected 6 min ago</span>
+              <span id="dashboard-save-status" role="status">Interactive layout · illustrative metrics</span>
             </div>
 
-            <div class="canvas" aria-hidden="true">
+            <div class="canvas" id="dashboard-canvas">
               <!-- lighthouse -->
-              <article class="tile span-4">
+              <article class="tile span-4" data-card-id="lighthouse">
                 <div class="tile-head">
                   <h3>Lighthouse</h3>
                   <span>/ · mobile</span>
@@ -206,7 +224,7 @@
               </article>
 
               <!-- core web vitals -->
-              <article class="tile span-2">
+              <article class="tile span-2" data-card-id="web-vitals">
                 <div class="tile-head">
                   <h3>Core Web Vitals</h3>
                   <span>28d</span>
@@ -247,7 +265,7 @@
               </article>
 
               <!-- region latency -->
-              <article class="tile span-2">
+              <article class="tile span-2" data-card-id="region-latency">
                 <div class="tile-head">
                   <h3>Region latency</h3>
                   <span>TTFB p50</span>
@@ -288,7 +306,7 @@
               </article>
 
               <!-- errors -->
-              <article class="tile span-2">
+              <article class="tile span-2" data-card-id="server-errors">
                 <div class="tile-head">
                   <h3>Server errors</h3>
                   <span>24h</span>
@@ -306,7 +324,7 @@
               </article>
 
               <!-- releases -->
-              <article class="tile span-2">
+              <article class="tile span-2" data-card-id="releases">
                 <div class="tile-head">
                   <h3>Releases</h3>
                   <span>4.2 / wk</span>
@@ -321,7 +339,7 @@
               </article>
 
               <!-- code quality -->
-              <article class="tile span-2">
+              <article class="tile span-2" data-card-id="code-quality">
                 <div class="tile-head">
                   <h3>Code quality</h3>
                   <span>repo-metrics</span>
@@ -347,7 +365,7 @@
               </article>
 
               <!-- anomalies -->
-              <article class="tile span-4">
+              <article class="tile span-4" data-card-id="anomalies">
                 <div class="tile-head">
                   <h3>Anomalies</h3>
                   <span>derived</span>
@@ -369,12 +387,12 @@
                     <span class="when">· 30d ago</span>
                   </li>
                 </ul>
-                <p class="tile-foot">each line deep-links to the card that saw it</p>
+                <p class="tile-foot">Illustrative anomalies · sample data</p>
               </article>
             </div>
           </div>
           <p class="canvas-caption">
-            Illustrative preview. The planned canvas supports drag-to-arrange cards and saved layouts.
+            Sample metrics for exploring the layout. Your dashboards and changes stay in this browser.
           </p>
         </div>
       </section>
@@ -703,8 +721,8 @@
             <span class="text-eyebrow">Roadmap</span>
             <h2>A preview of what’s ahead.</h2>
             <p>
-              Atlas is being built in the open and phases land incrementally. It
-              is not yet ready to run.
+              The interactive canvas is available above. Collectors, live data,
+              and the self-hosted backend are being built in the open.
             </p>
           </div>
 
@@ -841,6 +859,23 @@
         </div>
       </div>
     </footer>
+
+    <dialog class="dashboard-dialog" id="dashboard-name-dialog" aria-labelledby="dashboard-dialog-title">
+      <form id="dashboard-name-form">
+        <h2 id="dashboard-dialog-title">New dashboard</h2>
+        <p id="dashboard-dialog-description">Start with the sample cards, then make this layout your own.</p>
+        <label for="dashboard-name">Dashboard name</label>
+        <input id="dashboard-name" name="name" maxlength="48" required autocomplete="off" aria-describedby="dashboard-name-error" />
+        <p id="dashboard-name-error" class="form-error" role="alert"></p>
+        <div class="actions">
+          <button class="btn btn-outline" id="dashboard-name-cancel" type="button">Cancel</button>
+          <button class="btn btn-primary" id="dashboard-name-submit" type="submit">Create dashboard</button>
+        </div>
+      </form>
+    </dialog>
+    <p class="sr-only" id="dashboard-announcement" role="status" aria-live="polite" aria-atomic="true"></p>
+    <noscript><p class="page-shell canvas-caption">Enable JavaScript to create dashboards and edit card layouts. The sample cards remain available above.</p></noscript>
+    <script type="module" src="./dashboard/app.mjs"></script>
 
     <script>
       (function () {

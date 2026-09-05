@@ -1,0 +1,13 @@
+{
+  "name": "aisocratic-atlas",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.8.0",
+  "scripts": {
+    "test": "node --test tests/dashboard.test.mjs",
+    "test:e2e": "playwright test",
+    "verify": "node site/scripts/sync-design.mjs --check && pnpm test"
+  },
+  "devDependencies": { "@playwright/test": "1.57.0" }
+}
