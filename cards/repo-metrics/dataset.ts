@@ -1,0 +1,9 @@
+import type { DatasetContext, DatasetResult } from "../../lib/cards/define"
+import type { TelemetryPresentation } from "../../lib/cards/presentation"
+import { display, measured, timeRange } from "../../lib/collectors/dataset"
+import { repositorySource } from "./collector"
+export async function dataset(context: DatasetContext): Promise<DatasetResult<TelemetryPresentation>> {
+  const [since, until] = timeRange(context), rows = (await context.db.query(`SELECT * FROM ${context.db.table("repo_metrics")} WHERE repository=$1 AND measured_at >= $2 AND measured_at < $3 ORDER BY measured_at DESC LIMIT $4`, [repositorySource(context), since, until, context.query.limit])).rows
+  const latest = rows[0], deps = latest ? (await context.db.query(`SELECT * FROM ${context.db.table("dependency_health")} WHERE metric_id=$1 ORDER BY package_name`, [latest.id])).rows : []
+  return { empty: !latest, measuredAt: measured(latest?.measured_at), data: { source: latest?.metrics.label ?? "Configured checkout", description: "JS/TS/JSX source lines exclude comments/blanks. Duplication counts repeated non-overlapping 5-line blocks. Complexity is p95 function branch count + 1. Dependencies show declared range vs registry latest; missing registry data is unknown. No lint/tests/install scripts run.", metrics: [{ label: "Source lines", value: display(latest?.source_loc) }, { label: "Source files", value: display(latest?.source_files) }, { label: "Repeated blocks", value: display(latest?.duplication_percentage, "%") }, { label: "Function complexity p95", value: display(latest?.complexity_p95) }], columns: ["Dependency", "Declared range", "Wanted", "Latest", "Majors behind wanted"], rows: deps.map(dep => [dep.package_name, dep.current_version, latest.metrics.wanted[dep.package_name] ?? null, dep.latest_version, dep.majors_behind]) } }
+}

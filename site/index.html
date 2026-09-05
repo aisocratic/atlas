@@ -420,17 +420,16 @@
               <h3>A card is one folder</h3>
               <p>
                 <code>cards/&lt;id&gt;/</code> holds the component, the dataset
-                query, the collector and the explainer. Four files and one line
-                of config.
+                query, the collector and the explainer. Register its metadata, view and server definition;
+                the generic routes handle it.
               </p>
             </div>
             <div class="why">
               <div class="rule"></div>
               <h3>Zero keys on day one</h3>
               <p>
-                Region latency, SEO audits and releases need no API keys. Three
-                datasets are live about ninety seconds after
-                <code>pnpm setup</code>.
+                Region latency, SEO audits and releases need no API keys. Configure your site and repository, apply the schema with
+                <code>pnpm run setup</code>, then run the collectors.
               </p>
             </div>
             <div class="why">
@@ -449,12 +448,12 @@
       <section class="section" id="anatomy">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Planned card anatomy</span>
+            <span class="text-eyebrow">Card anatomy</span>
             <h2>One card is one folder.</h2>
             <p>
-              A card is not smeared across a route file, a barrel, an info map
-              and an anchor constant. It is a directory and one call to
-              <code>defineCard()</code>.
+              A card owns its component, query, collector and explainer.
+              Register its browser metadata and view separately from its server
+              <code>defineCard()</code> definition; the generic routes handle requests.
             </p>
           </div>
 
@@ -463,26 +462,24 @@
               <div class="code-title"><span>cards/region-latency/</span></div>
               <pre class="tree"><code><span class="d">cards/</span>
 └── <span class="d">region-latency/</span>
-    ├── <span class="f">cards.tsx</span>     <span class="c">the component</span>
+    ├── <span class="f">component.tsx</span> <span class="c">the component</span>
     ├── <span class="f">dataset.ts</span>    <span class="c">the SQL it reads</span>
     ├── <span class="f">collector.ts</span>  <span class="c">what fills the table</span>
     └── <span class="f">info.ts</span>       <span class="c">what it means</span></code></pre>
             </div>
 
             <div class="code-titled">
-              <div class="code-title"><span>cards.tsx</span></div>
+              <div class="code-title"><span>Server definition</span></div>
               <pre class="code"><code><span class="c-key">export default</span> <span class="c-fn">defineCard</span>({
-  id: <span class="c-str">"region-latency"</span>,
-  title: <span class="c-str">"Region latency"</span>,
-  category: <span class="c-str">"performance"</span>,
-  span: <span class="c-dim">2</span>,
-  dataset: <span class="c-str">"region-latency"</span>,
-  collector: <span class="c-str">"region-latency"</span>,
-  info,
-  component: () <span class="c-key">=&gt;</span> <span class="c-fn">import</span>(<span class="c-str">"./view"</span>),
-  requires: (env) <span class="c-key">=&gt;</span> env.site.url,
-  optIn: <span class="c-dim">false</span>,
-})</code></pre>
+  info,          <span class="c-dim">// id, title, layout, freshness</span>
+  requirements,  <span class="c-dim">// missing configuration</span>
+  dataset,       <span class="c-dim">// reads stored measurements</span>
+  collector,     <span class="c-dim">// fetches, then publishes atomically</span>
+})
+
+<span class="c-dim">// Register metadata and views in the browser registries.</span>
+<span class="c-dim">// Register this definition in cards/server.ts.</span>
+<span class="c-dim">// Existing dataset and collection routes serve the card.</span></code></pre>
             </div>
           </div>
 
@@ -599,7 +596,7 @@
                 <span class="eta">~15s</span>
               </div>
               <p>TTFB probes from a dozen regions, via Globalping.</p>
-              <p class="needs">Needs <b>nothing</b> — free and keyless.</p>
+              <p class="needs">Needs <b>your site URL</b> — no API key.</p>
             </article>
 
             <article class="collector">
@@ -651,8 +648,9 @@
           <div class="callout">
             <p>
               <strong>Zero keys on day one.</strong> Region latency, SEO audits
-              and releases need no API keys at all — three datasets are live
-              about ninety seconds after <code>pnpm setup</code>. Errors, web
+              and releases need no API keys. Configure the site and repository,
+              run <code>pnpm run setup</code>, then run each collector. Provider
+              availability determines when results arrive. Errors, web
               vitals and page views have no collector: they are push-ingested by
               a beacon.
             </p>
@@ -675,13 +673,12 @@
             </p>
           </div>
 
-          <h3 class="text-eyebrow" id="auth-heading">Three planned auth adapters</h3>
+          <h3 class="text-eyebrow" id="auth-heading">Three auth adapters</h3>
           <dl class="adapters" aria-labelledby="auth-heading">
             <div class="adapter">
               <dt>open</dt>
               <dd>
-                The default, so <code>pnpm dev</code> works with no
-                configuration.
+                For local development with <code>pnpm dev</code>, which binds to loopback.
                 <span class="flag">It refuses to serve in production</span> — the
                 app boots to the setup screen instead of quietly exposing your
                 telemetry.
@@ -697,7 +694,7 @@
             <div class="adapter">
               <dt>header</dt>
               <dd>
-                A trusted identity header, for running behind Cloudflare Access,
+                A trusted identity header and a verified proxy secret, for running behind Cloudflare Access,
                 oauth2-proxy, Authelia or Tailscale — where the gateway has
                 already done the authenticating.
               </dd>

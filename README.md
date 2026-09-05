@@ -9,29 +9,29 @@ Core Web Vitals, SEO audits, region latency probes, repo metrics, releases,
 server errors, real-user monitoring — and owns the schema they write to. Point it
 at any Postgres, run one command, and the cards fill in.
 
-> **Status: early.** Atlas is being extracted from a private codebase where it
-> has run in daily use. Phases land incrementally — see [the roadmap](#roadmap).
-> The interactive dashboard canvas runs today on GitHub Pages with sample data.
-> Collectors and the backend are not implemented yet.
+> **Status: in development.** The Next.js application, PostgreSQL storage,
+> authentication, and generic card/collector framework are implemented and tested.
+> The public GitHub Pages canvas uses sample data. Follow the
+> [phase evidence](docs/ROADMAP.md) for the remaining application and collector work.
 
 ## Why it exists
 
 - **It measures, it doesn't just display.** Every card has a collector behind
   it. `pnpm collect region-latency` writes rows; the card reads them. No glue.
-- **A card is one folder.** `cards/<id>/` holds the component, the dataset
-  query, the collector and the explainer. Adding your own card is four files
-  and one line of config — no route, no barrel, no anchor constant.
+- **A card is one folder.** `cards/<id>/` holds the component, dataset query,
+  collector and explainer. Register its metadata, view and server definition;
+  the existing generic routes handle it. See [the card contract](docs/CARDS.md).
 - **Zero keys on day one.** Region latency, SEO audits and releases need no API
-  keys. Three datasets are live about ninety seconds after `pnpm setup`.
+  keys. Configure the monitored site/repository, run `pnpm run setup`, then run
+  the collectors. Collection time and availability depend on each provider.
 - **You own the data.** One Postgres *schema* (default `atlas`), plain SQL, no
   ORM, no vendor. `DROP SCHEMA atlas CASCADE` is a clean uninstall.
 
 ## Run the website
 
-The runnable part is the project website and interactive dashboard canvas in
-`site/`. Create named dashboard tabs, drag and resize cards, and return to your
-saved layouts. Metrics are sample data; the database and collectors below
-describe the intended product and are not implemented yet.
+The public project website and interactive demo canvas are in `site/`. Create
+named dashboard tabs, drag and resize cards, and return to your saved layouts.
+Metrics are sample data; the demo does not connect to the application database.
 
 ```bash
 git clone https://github.com/aisocratic/atlas && cd atlas
@@ -41,6 +41,25 @@ python3 -m http.server 4175 --directory site
 Open http://localhost:4175. No Node dependencies, database, or sibling repository
 are needed. Serve over HTTP as shown so the browser can load JavaScript modules.
 The dashboard uses illustrative data.
+
+## Run the application
+
+Use Node 22.6+ and the pnpm version declared in `package.json`:
+
+```sh
+pnpm install --frozen-lockfile
+cp .env.example .env.local
+# Configure your PostgreSQL URL, monitored site and authentication secrets.
+pnpm run setup
+pnpm dev
+```
+
+Open http://127.0.0.1:3000. The setup screen explains incomplete configuration.
+The development server binds to loopback. For production, configure password
+or trusted-proxy authentication and the canonical dashboard origin before
+building; open authentication refuses production access. See
+[authentication and setup](docs/AUTH.md), [storage implementation](docs/phases/phase-2.md), and
+[card development](docs/CARDS.md).
 
 [Website](https://aisocratic.github.io/atlas/) ·
 [Shared design](https://aisocratic.github.io/stoa/) ·
@@ -83,29 +102,29 @@ in `site/dashboard/storage.mjs` is separate from the canvas state model.
 Cards you don't need are one line in `atlas.config.ts` to disable. A card whose
 requirements aren't met stays on the grid and says why, rather than vanishing.
 
-## Planned configuration
+## Configuration
 
 `atlas.config.ts` at the repo root: your site URL, which cards are enabled, and
 any overrides. The database is one variable, `DATABASE_URL`.
 
-## Planned security model
+## Security
 
-Three auth adapters ship: open (the default, refuses to serve in production),
-a shared password, and a trusted identity header for use behind Cloudflare
-Access, oauth2-proxy, Authelia or Tailscale. Collectors are triggered with a
-session or a bearer secret. See `docs/AUTH.md`.
+Three auth adapters are available: loopback development only, a shared password,
+and a trusted identity header plus a proxy secret. Browser sessions require CSRF
+validation for writes. Optional bearer credentials permit collection only.
+See [authentication](docs/AUTH.md) and [security policy](SECURITY.md).
 
 ## Roadmap
 
-- [ ] **Phase 0** — scaffold, design substrate, one rendered card
-- [ ] **Phase 1** — vendored UI substrate, fonts, tokens
-- [ ] **Phase 2** — storage: pool, migrations, the seventeen tables
-- [ ] **Phase 3** — the frame: canvas layout, cache, saved arrangements
-- [ ] **Phase 4** — the card registry and the two generic routes
-- [ ] **Phase 5** — first vertical slice: region latency
+- [x] **Phase 0** — scaffold, design substrate, one rendered card
+- [x] **Phase 1** — vendored UI substrate, fonts, tokens
+- [x] **Phase 2** — storage: pool, migrations, the seventeen tables
+- [x] **Phase 3** — the frame: canvas layout, cache, saved arrangements
+- [x] **Phase 4** — the card registry and the two generic routes
+- [x] **Phase 5** — first vertical slice: region latency
 - [ ] **Phase 6** — the remaining cards
 - [ ] **Phase 7** — demo mode, seed data, fixtures
-- [ ] **Phase 8** — auth adapters and the setup screen
+- [x] **Phase 8** — auth adapters and the setup screen
 - [ ] **Phase 9** — packaging and `v0.1.0`
 
 ## Design and development
@@ -148,8 +167,8 @@ The Pages workflow runs the canvas/state/storage tests, verifies design integrit
 and deploys `site/` when changes reach `main`. The tests cover independent boards,
 collision handling, resize bounds, keyboard/button ordering, persistence, and
 storage failures. Browser checks cover actual tab, dialog, drag, resize, theme,
-and mobile interactions. There are no `pnpm dev`, `pnpm setup`, or collector
-commands yet.
+and mobile interactions. The application CI separately verifies real PostgreSQL
+storage, card execution, authentication and production browser workflows.
 
 ## License
 
