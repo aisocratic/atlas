@@ -1,13 +1,69 @@
 {
   "name": "aisocratic-atlas",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.8.0",
+  "engines": {
+    "node": ">=22.6"
+  },
   "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "build": "next build",
+    "start": "node scripts/start.mjs",
+    "typecheck": "next typegen && tsc --noEmit",
+    "lint": "eslint app components cards lib scripts next.config.mjs postcss.config.mjs atlas.config.ts",
     "test": "node --test tests/dashboard.test.mjs",
     "test:e2e": "playwright test",
-    "verify": "node site/scripts/sync-design.mjs --check && pnpm test"
+    "design:sync": "node scripts/sync-design.mjs",
+    "design:check": "node scripts/sync-design.mjs --check && node site/scripts/sync-design.mjs --check && node scripts/check-fonts.mjs",
+    "verify": "pnpm design:check && pnpm typecheck && pnpm lint && pnpm test",
+    "setup": "tsx scripts/db/setup.ts",
+    "db:migrate": "tsx scripts/db/migrate.ts",
+    "db:schema": "tsx scripts/db/schema.ts",
+    "test:storage": "tsx --test tests/storage/*.test.ts",
+    "test:e2e:app": "playwright test --config playwright.app.config.mjs",
+    "collect": "tsx scripts/collect.ts",
+    "test:cards": "tsx --test tests/cards/*.test.ts",
+    "test:auth": "tsx --test tests/auth/*.test.ts",
+    "test:e2e:auth": "playwright test --config playwright.auth.config.mjs",
+    "test:region": "tsx --test tests/region-latency/*.test.ts",
+    "test:canvas": "tsx --test tests/canvas/*.test.ts",
+    "test:e2e:canvas": "playwright test --config playwright.canvas.config.mjs",
+    "test:collectors": "tsx --test tests/collectors/*.test.ts",
+    "test:e2e:collectors": "playwright test --config playwright.collectors.config.mjs",
+    "seed": "tsx scripts/db/seed.ts",
+    "test:demo": "tsx --test tests/demo/*.test.ts",
+    "test:e2e:demo": "playwright test --config playwright.demo.config.mjs",
+    "release:pack": "node scripts/release.mjs",
+    "test:package": "node scripts/verify-package.mjs"
   },
-  "devDependencies": { "@playwright/test": "1.57.0" }
+  "dependencies": {
+    "@aisocratic/design": "file:vendor/aisocratic-design-0.2.0.tgz",
+    "@next/env": "16.3.0",
+    "@radix-ui/react-slot": "1.2.4",
+    "cheerio": "^1.2.0",
+    "lucide-react": "^1.29.0",
+    "next": "16.3.0",
+    "next-themes": "^0.4.6",
+    "pg": "^8.20.0",
+    "react": "^19",
+    "react-dom": "^19",
+    "semver": "^7.8.5",
+    "typescript": "^5.9.3",
+    "web-vitals": "^6.2.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.57.0",
+    "@tailwindcss/postcss": "^4.1.9",
+    "@types/node": "^26.1.2",
+    "@types/pg": "^8.18.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19",
+    "@types/semver": "^7.8.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.3.0",
+    "tailwindcss": "^4.1.9",
+    "tsx": "^4.21.0"
+  }
 }

@@ -1,0 +1,5 @@
+@import "tailwindcss";
+@import "@aisocratic/design/tailwind.css";
+@source "../node_modules/@aisocratic/design/dist";
+
+/* App-specific styles belong below the shared design substrate. */

@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: atlas
+      POSTGRES_DB: atlas
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - atlas-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U atlas -d atlas']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  atlas:
+    build: .
+    init: true
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://atlas:${POSTGRES_PASSWORD}@db:5432/atlas
+      ATLAS_HOST: 0.0.0.0
+    ports:
+      - '127.0.0.1:3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  atlas-data:

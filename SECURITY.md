@@ -1,40 +1,17 @@
-# Security Policy
+# Security policy
 
-## Reporting a vulnerability
+Report vulnerabilities privately to **security@aisocratic.org**, including reproduction steps and impact. Atlas is pre-1.0; fixes land on `main` and in the next release.
 
-Email **security@aisocratic.org**. Please do not open a public issue.
+## Deployment boundary
 
-Include what you found, how to reproduce it, and what an attacker could do with
-it. We aim to acknowledge within 72 hours.
+The Next.js app stores engineering telemetry in PostgreSQL. Production requires shared-password or verified proxy authentication; open mode is refused. The separate GitHub Pages site is a public demonstration with illustrative data and browser storage, not a telemetry endpoint.
 
-## Atlas's trust model — read this before deploying
+Follow [authentication and deployment instructions](docs/AUTH.md). Shared-password sessions expire, use signed HttpOnly cookies, and require same-origin CSRF tokens for mutations. Logout removes the local cookie; credential rotation invalidates outstanding stateless sessions. The shared password is one team principal, not individual accounts or role-based authorization.
 
-**Atlas has no user accounts and no in-app permission system.** Anyone who can
-reach the board can read and edit every card. Assignees are free text, not
-identities. This is deliberate: adding roles without an identity provider would
-look like access control without being it.
+Trusted header mode requires a separate proxy secret as well as an identity header. Configure the authenticating proxy to replace both headers, keep that secret private, and restrict direct app access where possible. Atlas never trusts a forwarded IP as evidence that a request passed through the proxy. Open local development relies on binding the server to loopback; URL/Host checks cannot establish the actual network peer.
 
-The consequences you need to plan for:
+Collector bearer tokens have collection-only scope and cannot read datasets or change dashboards. Server CLI access and database credentials remain privileged. Keep secrets out of config files committed to Git, client bundles, logs, and public Pages assets. Use HTTPS and verified PostgreSQL TLS for managed databases.
 
-- **Do not expose a board to the internet unauthenticated.** `AGORA_AUTH=none`
-  is meant for localhost. In production, set `AGORA_AUTH=password`, or put Atlas
-  behind a proxy that authenticates for you and use `AGORA_AUTH=proxy`.
-- **`AGORA_AUTH=proxy` is only as good as your network.** It trusts an HTTP
-  header. If anything can reach the app without passing through your proxy, that
-  header can be forged. Atlas refuses the header unless the peer address is in
-  the configured trusted range, but the network is still yours to get right.
-- **API tokens are bearer credentials.** Anything holding one has full board
-  access. They must be at least 32 characters; Atlas refuses shorter ones at
-  startup. Rotate by editing `AGORA_API_TOKENS` and restarting.
-- **The `command` dispatch adapter executes a process on your server.** It is
-  off unless you set `AGORA_ALLOW_COMMAND_DISPATCH=1`. Card content becomes part
-  of that process's input, so treat anyone who can create a card as someone who
-  can influence what runs. Prefer the `webhook` adapter, which moves execution
-  somewhere with its own boundary.
-- **Webhook payloads are signed, not encrypted.** Verify the
-  `X-Atlas-Signature` HMAC on your receiver, and serve it over TLS.
+Every new server page must use `requirePageAuth` before reading telemetry; every new API must use `authorizeRequest` before loading configuration/data. Cookie-authenticated mutations require CSRF validation. Do not cache private responses publicly. Security regression tests cover production open refusal, expiry/tampering, Origin/CSRF, proxy forgery, token scope, and login/logout.
 
-## Supported versions
-
-Atlas is pre-1.0. Security fixes land on `main` and in the next release; there
-are no backports yet.
+The built-in login failure limiter is per-process. Multi-instance deployments need an ingress rate limiter. Database access is parameterized and restricted to a dedicated configurable schema; migrations are append-only, transactionally locked, and checksummed. Use credentials restricted to that database/schema and run setup intentionally.

@@ -49,7 +49,7 @@
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,200;1,6..72,200&family=Space+Grotesk:wght@400;500&display=swap"
     />
     <link rel="stylesheet" href="./vendor/design.css" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=0.1.0" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%237c3aed'/%3E%3Cstop offset='35%25' stop-color='%23a855f7'/%3E%3Cstop offset='65%25' stop-color='%23ec4899'/%3E%3Cstop offset='100%25' stop-color='%23f472b6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='url(%23g)' stroke-width='4'/%3E%3C/svg%3E" />
   </head>
   <body>
@@ -401,7 +401,7 @@
       <section class="section" id="why">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Planned approach</span>
+            <span class="text-eyebrow">Approach</span>
             <h2>Four decisions that shape everything else.</h2>
           </div>
 
@@ -420,17 +420,16 @@
               <h3>A card is one folder</h3>
               <p>
                 <code>cards/&lt;id&gt;/</code> holds the component, the dataset
-                query, the collector and the explainer. Four files and one line
-                of config.
+                query, the collector and the explainer. Register its metadata, view and server definition;
+                the generic routes handle it.
               </p>
             </div>
             <div class="why">
               <div class="rule"></div>
               <h3>Zero keys on day one</h3>
               <p>
-                Region latency, SEO audits and releases need no API keys. Three
-                datasets are live about ninety seconds after
-                <code>pnpm setup</code>.
+                Region latency, SEO audits and releases need no API keys. Configure your site and repository, apply the schema with
+                <code>pnpm run setup</code>, then run the collectors.
               </p>
             </div>
             <div class="why">
@@ -449,12 +448,12 @@
       <section class="section" id="anatomy">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Planned card anatomy</span>
+            <span class="text-eyebrow">Card anatomy</span>
             <h2>One card is one folder.</h2>
             <p>
-              A card is not smeared across a route file, a barrel, an info map
-              and an anchor constant. It is a directory and one call to
-              <code>defineCard()</code>.
+              A card owns its component, query, collector and explainer.
+              Register its browser metadata and view separately from its server
+              <code>defineCard()</code> definition; the generic routes handle requests.
             </p>
           </div>
 
@@ -463,26 +462,24 @@
               <div class="code-title"><span>cards/region-latency/</span></div>
               <pre class="tree"><code><span class="d">cards/</span>
 └── <span class="d">region-latency/</span>
-    ├── <span class="f">cards.tsx</span>     <span class="c">the component</span>
+    ├── <span class="f">component.tsx</span> <span class="c">the component</span>
     ├── <span class="f">dataset.ts</span>    <span class="c">the SQL it reads</span>
     ├── <span class="f">collector.ts</span>  <span class="c">what fills the table</span>
     └── <span class="f">info.ts</span>       <span class="c">what it means</span></code></pre>
             </div>
 
             <div class="code-titled">
-              <div class="code-title"><span>cards.tsx</span></div>
+              <div class="code-title"><span>Server definition</span></div>
               <pre class="code"><code><span class="c-key">export default</span> <span class="c-fn">defineCard</span>({
-  id: <span class="c-str">"region-latency"</span>,
-  title: <span class="c-str">"Region latency"</span>,
-  category: <span class="c-str">"performance"</span>,
-  span: <span class="c-dim">2</span>,
-  dataset: <span class="c-str">"region-latency"</span>,
-  collector: <span class="c-str">"region-latency"</span>,
-  info,
-  component: () <span class="c-key">=&gt;</span> <span class="c-fn">import</span>(<span class="c-str">"./view"</span>),
-  requires: (env) <span class="c-key">=&gt;</span> env.site.url,
-  optIn: <span class="c-dim">false</span>,
-})</code></pre>
+  info,          <span class="c-dim">// id, title, layout, freshness</span>
+  requirements,  <span class="c-dim">// missing configuration</span>
+  dataset,       <span class="c-dim">// reads stored measurements</span>
+  collector,     <span class="c-dim">// fetches, then publishes atomically</span>
+})
+
+<span class="c-dim">// Register metadata and views in the browser registries.</span>
+<span class="c-dim">// Register this definition in cards/server.ts.</span>
+<span class="c-dim">// Existing dataset and collection routes serve the card.</span></code></pre>
             </div>
           </div>
 
@@ -501,7 +498,7 @@
       <section class="section" id="cards">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Planned cards</span>
+            <span class="text-eyebrow">Cards</span>
             <h2>Nine groups, and the collector behind each.</h2>
           </div>
 
@@ -581,7 +578,7 @@
       <section class="section" id="collectors">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Planned collectors</span>
+            <span class="text-eyebrow">Collectors</span>
             <h2>Six collectors, three ways to run them.</h2>
             <p>
               <code>pnpm collect &lt;id&gt;</code>,
@@ -599,7 +596,7 @@
                 <span class="eta">~15s</span>
               </div>
               <p>TTFB probes from a dozen regions, via Globalping.</p>
-              <p class="needs">Needs <b>nothing</b> — free and keyless.</p>
+              <p class="needs">Needs <b>your site URL</b> — no API key.</p>
             </article>
 
             <article class="collector">
@@ -616,7 +613,7 @@
                 <h3>lighthouse</h3>
                 <span class="eta">~15min</span>
               </div>
-              <p>Scores and Core Web Vitals, route by route.</p>
+              <p>Lighthouse lab scores and LCP/CLS, route by route.</p>
               <p class="needs">Needs <b>a PageSpeed key</b> — optional.</p>
             </article>
 
@@ -651,10 +648,11 @@
           <div class="callout">
             <p>
               <strong>Zero keys on day one.</strong> Region latency, SEO audits
-              and releases need no API keys at all — three datasets are live
-              about ninety seconds after <code>pnpm setup</code>. Errors, web
-              vitals and page views have no collector: they are push-ingested by
-              a beacon.
+              and releases need no API keys. Configure the site and repository,
+              run <code>pnpm run setup</code>, then run each collector. Provider
+              availability determines when results arrive. A browser beacon sends
+              web vitals and page views; server errors use a separate privileged
+              ingestion token.
             </p>
           </div>
         </div>
@@ -675,13 +673,12 @@
             </p>
           </div>
 
-          <h3 class="text-eyebrow" id="auth-heading">Three planned auth adapters</h3>
+          <h3 class="text-eyebrow" id="auth-heading">Three auth adapters</h3>
           <dl class="adapters" aria-labelledby="auth-heading">
             <div class="adapter">
               <dt>open</dt>
               <dd>
-                The default, so <code>pnpm dev</code> works with no
-                configuration.
+                For local development with <code>pnpm dev</code>, which binds to loopback.
                 <span class="flag">It refuses to serve in production</span> — the
                 app boots to the setup screen instead of quietly exposing your
                 telemetry.
@@ -697,7 +694,7 @@
             <div class="adapter">
               <dt>header</dt>
               <dd>
-                A trusted identity header, for running behind Cloudflare Access,
+                A trusted identity header and a verified proxy secret, for running behind Cloudflare Access,
                 oauth2-proxy, Authelia or Tailscale — where the gateway has
                 already done the authenticating.
               </dd>
@@ -719,57 +716,57 @@
         <div class="page-shell">
           <div class="section-head">
             <span class="text-eyebrow">Roadmap</span>
-            <h2>A preview of what’s ahead.</h2>
+            <h2>The v0.1.0 roadmap.</h2>
             <p>
-              The interactive canvas is available above. Collectors, live data,
-              and the self-hosted backend are being built in the open.
+              The application, collectors, authentication and isolated demo are implemented.
+              Production packaging is in final release verification.
             </p>
           </div>
 
           <ol class="roadmap">
             <li>
-              <span class="box" aria-hidden="true"></span>
-              <span class="n">Phase 0</span>
+              <span class="box" aria-hidden="true">✓</span>
+              <span class="n">Phase 0 — complete</span>
               <span class="what">Scaffold, design substrate, one rendered card</span>
             </li>
             <li>
-              <span class="box" aria-hidden="true"></span>
-              <span class="n">Phase 1</span>
+              <span class="box" aria-hidden="true">✓</span>
+              <span class="n">Phase 1 — complete</span>
               <span class="what">Vendored UI substrate, fonts, tokens</span>
             </li>
             <li>
-              <span class="box" aria-hidden="true"></span>
-              <span class="n">Phase 2</span>
+              <span class="box" aria-hidden="true">✓</span>
+              <span class="n">Phase 2 — complete</span>
               <span class="what">Storage: pool, migrations, the seventeen tables</span>
             </li>
             <li>
-              <span class="box" aria-hidden="true"></span>
-              <span class="n">Phase 3</span>
+              <span class="box" aria-hidden="true">✓</span>
+              <span class="n">Phase 3 — complete</span>
               <span class="what">The frame: canvas layout, cache, saved arrangements</span>
             </li>
             <li>
-              <span class="box" aria-hidden="true"></span>
-              <span class="n">Phase 4</span>
+              <span class="box" aria-hidden="true">✓</span>
+              <span class="n">Phase 4 — complete</span>
               <span class="what">The card registry and the two generic routes</span>
             </li>
             <li>
-              <span class="box" aria-hidden="true"></span>
-              <span class="n">Phase 5</span>
+              <span class="box" aria-hidden="true">✓</span>
+              <span class="n">Phase 5 — complete</span>
               <span class="what">First vertical slice: region latency</span>
             </li>
             <li>
-              <span class="box" aria-hidden="true"></span>
-              <span class="n">Phase 6</span>
+              <span class="box" aria-hidden="true">✓</span>
+              <span class="n">Phase 6 — complete</span>
               <span class="what">The remaining cards</span>
             </li>
             <li>
-              <span class="box" aria-hidden="true"></span>
-              <span class="n">Phase 7</span>
+              <span class="box" aria-hidden="true">✓</span>
+              <span class="n">Phase 7 — complete</span>
               <span class="what">Demo mode, seed data, fixtures</span>
             </li>
             <li>
-              <span class="box" aria-hidden="true"></span>
-              <span class="n">Phase 8</span>
+              <span class="box" aria-hidden="true">✓</span>
+              <span class="n">Phase 8 — complete</span>
               <span class="what">Auth adapters and the setup screen</span>
             </li>
             <li>

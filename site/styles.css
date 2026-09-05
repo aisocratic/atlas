@@ -849,7 +849,8 @@ h3.text-eyebrow {
   font-family: var(--font-code);
   font-size: var(--text-micro);
   color: var(--muted-foreground);
-  white-space: nowrap;
+  white-space: normal;
+  min-width: 0;
 }
 
 .roadmap .what {

@@ -1,0 +1,12 @@
+import type { ComponentType } from "react"
+import type { CardProps } from "../lib/cards/types"
+import { RegionLatencyCard as Card0 } from "./region-latency/component"
+import { Card as Card1 } from "./lighthouse/component"
+import { Card as Card2 } from "./seo-audit/component"
+import { Card as Card3 } from "./releases/component"
+import { Card as Card4 } from "./repo-metrics/component"
+import { Card as Card5 } from "./ai-usage/component"
+import { Card as Card6 } from "./real-users/component"
+import { Card as Card7 } from "./server-errors/component"
+import { Card as Card8 } from "./anomalies/component"
+export const cardComponents: Record<string, ComponentType<CardProps>> = { "region-latency": Card0, "lighthouse": Card1, "seo-audit": Card2, "releases": Card3, "repo-metrics": Card4, "ai-usage": Card5, "real-users": Card6, "server-errors": Card7, "anomalies": Card8 }

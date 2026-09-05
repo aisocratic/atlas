@@ -1,0 +1,71 @@
+name: Verify application
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: roadmap
+          POSTGRES_PASSWORD: roadmap-test
+          POSTGRES_DB: roadmap_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U roadmap -d roadmap_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      ATLAS_TEST_DATABASE_URL: postgres://roadmap:roadmap-test@127.0.0.1:5432/roadmap_test
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+      - run: pnpm test:storage
+      - run: pnpm test:cards
+      - run: pnpm test:region
+      - run: pnpm test:demo
+      - run: pnpm test:collectors
+      - run: pnpm test:auth
+      - run: pnpm test:canvas
+      - run: pnpm build
+      - name: Package startup and repeated teardown on the same port
+        run: |
+          node scripts/verify-package-port.mjs
+          pnpm test:package
+          pnpm test:package
+      - run: docker build -t atlas:ci .
+      - run: docker run --rm --network host -e ATLAS_TEST_DATABASE_URL atlas:ci pnpm test:package
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - run: pnpm test:e2e:auth
+      - run: pnpm test:e2e:app
+      - run: pnpm test:e2e:canvas
+      - run: pnpm test:e2e:collectors
+      - run: pnpm test:e2e:demo
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: failure()
+        with:
+          name: browser-failure-evidence
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
