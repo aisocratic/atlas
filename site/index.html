@@ -49,7 +49,7 @@
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,200;1,6..72,200&family=Space+Grotesk:wght@400;500&display=swap"
     />
     <link rel="stylesheet" href="./vendor/design.css" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=0.1.0" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%237c3aed'/%3E%3Cstop offset='35%25' stop-color='%23a855f7'/%3E%3Cstop offset='65%25' stop-color='%23ec4899'/%3E%3Cstop offset='100%25' stop-color='%23f472b6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='url(%23g)' stroke-width='4'/%3E%3C/svg%3E" />
   </head>
   <body>
@@ -401,7 +401,7 @@
       <section class="section" id="why">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Planned approach</span>
+            <span class="text-eyebrow">Approach</span>
             <h2>Four decisions that shape everything else.</h2>
           </div>
 
@@ -498,7 +498,7 @@
       <section class="section" id="cards">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Planned cards</span>
+            <span class="text-eyebrow">Cards</span>
             <h2>Nine groups, and the collector behind each.</h2>
           </div>
 
@@ -578,7 +578,7 @@
       <section class="section" id="collectors">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Planned collectors</span>
+            <span class="text-eyebrow">Collectors</span>
             <h2>Six collectors, three ways to run them.</h2>
             <p>
               <code>pnpm collect &lt;id&gt;</code>,
@@ -613,7 +613,7 @@
                 <h3>lighthouse</h3>
                 <span class="eta">~15min</span>
               </div>
-              <p>Scores and Core Web Vitals, route by route.</p>
+              <p>Lighthouse lab scores and LCP/CLS, route by route.</p>
               <p class="needs">Needs <b>a PageSpeed key</b> — optional.</p>
             </article>
 
@@ -650,9 +650,9 @@
               <strong>Zero keys on day one.</strong> Region latency, SEO audits
               and releases need no API keys. Configure the site and repository,
               run <code>pnpm run setup</code>, then run each collector. Provider
-              availability determines when results arrive. Errors, web
-              vitals and page views have no collector: they are push-ingested by
-              a beacon.
+              availability determines when results arrive. A browser beacon sends
+              web vitals and page views; server errors use a separate privileged
+              ingestion token.
             </p>
           </div>
         </div>
