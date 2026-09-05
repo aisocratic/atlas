@@ -25,21 +25,25 @@ at any Postgres, run one command, and the cards fill in.
 - **You own the data.** One Postgres *schema* (default `atlas`), plain SQL, no
   ORM, no vendor. `DROP SCHEMA atlas CASCADE` is a clean uninstall.
 
-## Quick start
+## Run the website
+
+The runnable part of this repository is the static project website and dashboard
+illustration in `site/`. The application, database, and collectors below describe
+the intended product and are not implemented yet.
 
 ```bash
 git clone https://github.com/aisocratic/atlas && cd atlas
-pnpm install
-docker compose up -d db        # or set DATABASE_URL to any Postgres 14+
-pnpm setup                     # creates the schema, migrates
-pnpm collect region-latency seo-audit releases
-pnpm dev
+python3 -m http.server 4175 --directory site
 ```
 
-Open http://localhost:3000. Prefer to look before you install? `pnpm demo`
-renders every card against fixture data and never opens a database connection.
+Open http://localhost:4175. No Node dependencies, database, or sibling repository
+are needed. The dashboard preview uses illustrative data.
 
-## The cards
+[Website](https://aisocratic.github.io/atlas/) ·
+[Shared design](https://aisocratic.github.io/stoa/) ·
+[Agora](https://aisocratic.github.io/agora/)
+
+## Planned cards
 
 | group | what it shows | collector |
 |---|---|---|
@@ -56,12 +60,12 @@ renders every card against fixture data and never opens a database connection.
 Cards you don't need are one line in `atlas.config.ts` to disable. A card whose
 requirements aren't met stays on the grid and says why, rather than vanishing.
 
-## Configuration
+## Planned configuration
 
 `atlas.config.ts` at the repo root: your site URL, which cards are enabled, and
 any overrides. The database is one variable, `DATABASE_URL`.
 
-## Security model
+## Planned security model
 
 Three auth adapters ship: open (the default, refuses to serve in production),
 a shared password, and a trusted identity header for use behind Cloudflare
@@ -81,18 +85,35 @@ session or a bearer secret. See `docs/AUTH.md`.
 - [ ] **Phase 8** — auth adapters and the setup screen
 - [ ] **Phase 9** — packaging and `v0.1.0`
 
-## Development
+## Design and development
+
+The site imports `@aisocratic/design` from the
+[Stoa repository](https://github.com/aisocratic/stoa). `site/vendor/design.css`
+is an exact copy of the generated `dist/css/site.css`, including tokens,
+typography, shared header, mobile menu, hero, buttons, and footer. Atlas-specific
+preview and content styles live in `site/styles.css`.
+
+The package version and SHA-256 are recorded in `site/vendor/design.json`.
+Refresh an unpublished local build and verify the checked-in dependency:
 
 ```bash
-pnpm verify      # typecheck + lint + unit tests
-pnpm test:e2e    # Playwright
+# In a Stoa checkout: pnpm install && pnpm build
+node site/scripts/sync-design.mjs ../stoa
+node site/scripts/sync-design.mjs --check
 ```
 
-Stack: Next.js 16, React 19, Tailwind v4, Recharts, `pg` with hand-written SQL,
-Postgres 14+.
+For a published release, use `node site/scripts/sync-design.mjs --version X.Y.Z`.
+The checked-in stylesheet keeps a clean clone independent of package availability
+and sibling checkouts. Commit the stylesheet and metadata together when updating.
+
+Before a pull request, run the integrity check, serve `site/`, and check desktop
+and mobile layouts, navigation, and the dark → light → system theme cycle.
+The Pages workflow verifies integrity and deploys `site/` when changes reach
+`main`. Application tests and database commands will arrive with their roadmap
+phases; there are no `pnpm dev`, `pnpm setup`, or collector commands yet.
 
 ## License
 
-MIT © AI Socratic. The design system is [`@aisocratic/stoa`](https://www.npmjs.com/package/@aisocratic/stoa).
+MIT © AI Socratic. The design system is [`@aisocratic/design`](https://github.com/aisocratic/stoa).
 Fonts are Space Grotesk, Newsreader and JetBrains Mono under the SIL Open Font
-License 1.1, loaded by the app.
+License 1.1, loaded by the website.

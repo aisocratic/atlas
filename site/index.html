@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -9,7 +9,7 @@
       content="Atlas is an open-source, self-hostable dashboard that measures your site and your repo and keeps the results itself. It ships its own collectors — Lighthouse, SEO, region latency, repo metrics, releases — and owns the Postgres schema they write to."
     />
     <meta name="color-scheme" content="dark light" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f2e8" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
 
     <meta property="og:type" content="website" />
@@ -33,12 +33,12 @@
       content="A drag-to-arrange canvas of telemetry cards that ships its own collectors and owns the Postgres schema they write to."
     />
 
-    <!-- Stoa serves the OS theme from the stylesheet alone; a stored choice is
-         pinned with data-theme on <html> before first paint so nothing flashes. -->
+    <!-- Apply the saved preference before first paint; new visitors start dark. -->
     <script>
       try {
         var t = localStorage.getItem("theme");
-        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+        if (t === "system") delete document.documentElement.dataset.theme;
+        else if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
       } catch (e) {}
     </script>
 
@@ -48,7 +48,7 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,200;1,6..72,200&family=Space+Grotesk:wght@400;500&display=swap"
     />
-    <link rel="stylesheet" href="./vendor/stoa.css" />
+    <link rel="stylesheet" href="./vendor/design.css" />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%237c3aed'/%3E%3Cstop offset='35%25' stop-color='%23a855f7'/%3E%3Cstop offset='65%25' stop-color='%23ec4899'/%3E%3Cstop offset='100%25' stop-color='%23f472b6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='url(%23g)' stroke-width='4'/%3E%3C/svg%3E" />
   </head>
@@ -85,7 +85,7 @@
         </nav>
 
         <div class="site-actions">
-          <a class="btn btn-cta btn-sm" href="https://github.com/aisocratic/atlas">GitHub</a>
+          <a class="icon-btn" href="https://github.com/aisocratic/atlas" aria-label="GitHub"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="github"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></svg></a>
           <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Toggle theme" data-theme-toggle>
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></svg>
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" data-icon="sun"><circle cx="12" cy="12" r="4" /><path d="M12 2v2" /><path d="M12 20v2" /><path d="m4.93 4.93 1.41 1.41" /><path d="m17.66 17.66 1.41 1.41" /><path d="M2 12h2" /><path d="M20 12h2" /><path d="m6.34 17.66-1.41 1.41" /><path d="m19.07 4.93-1.41 1.41" /></svg>
@@ -122,56 +122,23 @@
 
     <main id="main">
       <!-- ------------------------------------------------------------ hero -->
-      <section class="hero">
+      <section class="project-hero">
         <div class="page-shell">
-          <div class="hero-grid">
-            <div>
-              <p class="pill">
-                <span class="dot" aria-hidden="true"></span>
-                Early — not yet ready to run
-              </p>
-              <h1>
-                It measures your site and your repo,
-                <em>and keeps the results itself.</em>
-              </h1>
-              <p class="hero-sub">
-                Atlas is a self-hostable, drag-to-arrange canvas of telemetry
-                cards. Not a BI viewer you point at tables you already have: it
-                ships its own collectors and
-                <strong>owns the schema they write to</strong>. Point it at any
-                Postgres, run one command, and the cards fill in.
-              </p>
-              <div class="actions">
-                <a class="btn btn-primary" href="https://github.com/aisocratic/atlas">
-                  <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
-                    <path
-                      d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
-                    />
-                  </svg>
-                  View on GitHub
-                </a>
-                <a class="btn btn-outline" href="#cards">See the cards</a>
-              </div>
-            </div>
-
-            <div>
-              <div class="code-titled">
-                <div class="code-title"><span>quick start</span><span>~90s</span></div>
-                <pre class="code"><code>git clone https://github.com/aisocratic/atlas
-<span class="c-fn">cd</span> atlas &amp;&amp; pnpm install
-docker compose up -d db   <span class="c-dim"># or any Postgres 14+</span>
-pnpm setup                <span class="c-dim"># schema + migrations</span>
-pnpm collect region-latency seo-audit releases
-pnpm dev</code></pre>
-              </div>
-              <p class="hero-note">
-                Prefer to look before you install? <code>pnpm demo</code> renders
-                every card against fixture data and never opens a database
-                connection.
-              </p>
-            </div>
+          <p class="text-eyebrow">AI Socratic / Engineering</p>
+          <h1>Atlas</h1>
+          <p class="hero-sub">
+            A self-hostable dashboard for your site and your repo.
+            Telemetry cards, built-in collectors, and data you own.
+          </p>
+          <div class="actions">
+            <a class="btn btn-primary" href="https://github.com/aisocratic/atlas">View on GitHub</a>
+            <a class="btn btn-outline" href="#cards">Explore the cards</a>
           </div>
-
+          <p class="hero-status"><span class="pill"><span class="dot" aria-hidden="true"></span>In development · dashboard preview</span></p>
+        </div>
+      </section>
+      <section class="preview-section" aria-label="Dashboard preview">
+        <div class="page-shell">
           <!-- ------------------------------------------------- mock canvas -->
           <div class="canvas-frame" role="img"
             aria-label="Illustration of the Atlas dashboard: a grid of telemetry cards showing Lighthouse scores, Core Web Vitals sparklines, region latency bars, server errors, recent releases and detected anomalies.">
@@ -407,7 +374,7 @@ pnpm dev</code></pre>
             </div>
           </div>
           <p class="canvas-caption">
-            The canvas is drag-to-arrange; layouts are saved per user.
+            Illustrative preview. The planned canvas supports drag-to-arrange cards and saved layouts.
           </p>
         </div>
       </section>
@@ -416,7 +383,7 @@ pnpm dev</code></pre>
       <section class="section" id="why">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Why it exists</span>
+            <span class="text-eyebrow">Planned approach</span>
             <h2>Four decisions that shape everything else.</h2>
           </div>
 
@@ -464,7 +431,7 @@ pnpm dev</code></pre>
       <section class="section" id="anatomy">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Anatomy</span>
+            <span class="text-eyebrow">Planned card anatomy</span>
             <h2>One card is one folder.</h2>
             <p>
               A card is not smeared across a route file, a barrel, an info map
@@ -516,7 +483,7 @@ pnpm dev</code></pre>
       <section class="section" id="cards">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">The cards</span>
+            <span class="text-eyebrow">Planned cards</span>
             <h2>Nine groups, and the collector behind each.</h2>
           </div>
 
@@ -596,7 +563,7 @@ pnpm dev</code></pre>
       <section class="section" id="collectors">
         <div class="page-shell">
           <div class="section-head">
-            <span class="text-eyebrow">Collectors</span>
+            <span class="text-eyebrow">Planned collectors</span>
             <h2>Six collectors, three ways to run them.</h2>
             <p>
               <code>pnpm collect &lt;id&gt;</code>,
@@ -690,7 +657,7 @@ pnpm dev</code></pre>
             </p>
           </div>
 
-          <h3 class="text-eyebrow" id="auth-heading">Three auth adapters ship</h3>
+          <h3 class="text-eyebrow" id="auth-heading">Three planned auth adapters</h3>
           <dl class="adapters" aria-labelledby="auth-heading">
             <div class="adapter">
               <dt>open</dt>
@@ -734,7 +701,7 @@ pnpm dev</code></pre>
         <div class="page-shell">
           <div class="section-head">
             <span class="text-eyebrow">Roadmap</span>
-            <h2>Nothing is shipped yet.</h2>
+            <h2>A preview of what’s ahead.</h2>
             <p>
               Atlas is being built in the open and phases land incrementally. It
               is not yet ready to run.
@@ -854,7 +821,9 @@ pnpm dev</code></pre>
             <h4 class="text-eyebrow">Family</h4>
             <ul>
               <li><a href="https://aisocratic.org">aisocratic.org</a></li>
-              <li><a href="https://www.npmjs.com/package/@aisocratic/stoa">Stoa</a></li>
+              <li><a href="https://aisocratic.github.io/stoa/">Stoa · Design</a></li>
+              <li><a href="https://aisocratic.github.io/agora/">Agora · Community</a></li>
+              <li><a href="https://aisocratic.github.io/atlas/" aria-current="page">Atlas · Analytics</a></li>
             </ul>
           </div>
         </div>
@@ -878,21 +847,21 @@ pnpm dev</code></pre>
         var root = document.documentElement;
         var mql = window.matchMedia("(prefers-color-scheme: dark)");
 
-        // ---- theme toggle: pins data-theme on <html>, remembers it -------
-        function isDark() {
-          return root.dataset.theme ? root.dataset.theme === "dark" : mql.matches;
-        }
+        // Cycle through explicit dark, light, and system preferences.
+        var preference = root.dataset.theme || "system";
         function label() {
-          var next = isDark() ? "light" : "dark";
-          document.querySelectorAll("[data-theme-toggle]").forEach(function (b) {
-            b.setAttribute("aria-label", "Switch to " + next + " mode");
+          var next = preference === "dark" ? "light" : preference === "light" ? "system" : "dark";
+          document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
+            button.setAttribute("aria-label", "Theme: " + preference + ". Switch to " + next + " mode");
+            button.setAttribute("title", "Theme: " + preference + ". Switch to " + next + " mode");
           });
         }
-        document.querySelectorAll("[data-theme-toggle]").forEach(function (b) {
-          b.addEventListener("click", function () {
-            var next = isDark() ? "light" : "dark";
-            root.dataset.theme = next;
-            try { localStorage.setItem("theme", next); } catch (e) {}
+        document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
+          button.addEventListener("click", function () {
+            preference = preference === "dark" ? "light" : preference === "light" ? "system" : "dark";
+            if (preference === "system") delete root.dataset.theme;
+            else root.dataset.theme = preference;
+            try { localStorage.setItem("theme", preference); } catch (e) {}
             label();
           });
         });
@@ -916,7 +885,7 @@ pnpm dev</code></pre>
           a.addEventListener("click", function () { setOpen(false); });
         });
         document.addEventListener("keydown", function (e) {
-          if (e.key === "Escape" && !panel.hidden) setOpen(false);
+          if (e.key === "Escape" && !panel.hidden) { setOpen(false); toggle.focus(); }
         });
         window.matchMedia("(min-width: 64rem)").addEventListener("change", function (e) {
           if (e.matches && !panel.hidden) setOpen(false);

@@ -1,7 +1,7 @@
 name: Deploy landing page
 
 # The site in `site/` is plain static HTML/CSS — no build step, no npm — so the
-# workflow only has to upload the directory and hand it to Pages.
+# workflow verifies the vendored design, then uploads the directory to Pages.
 
 on:
   push:
@@ -31,6 +31,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Verify shared design integrity
+        run: node site/scripts/sync-design.mjs --check
 
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
