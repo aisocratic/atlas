@@ -19,7 +19,7 @@ try {
   await run(['collect', 'seo-audit'])
   assert(Number((await pool.query(`select count(*) from "${schema}".seo_audits`)).rows[0].count) > 0)
   await run(['seed'], { ATLAS_DEMO: 'true' })
-  server = spawn('pnpm', ['start'], { env: { ...env, ATLAS_DEMO: 'true' }, stdio: 'inherit' })
+  server = spawn('pnpm', ['start', '--hostname', '127.0.0.1', '--port', String(port)], { env: { ...env, PORT: String(port + 1), ATLAS_DEMO: 'true' }, stdio: 'inherit' })
   let ready = false
   for (let i = 0; i < 120; i++) { try { if ((await fetch(`${origin}/login`)).status === 200) { ready = true; break } } catch {} await new Promise(resolve => setTimeout(resolve, 500)) }
   assert(ready, 'Production server starts')

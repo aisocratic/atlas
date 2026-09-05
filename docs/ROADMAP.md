@@ -1,6 +1,6 @@
 # Atlas roadmap completion contract
 
-**Resumed at user request on 2026-09-05.** Phase 7 is complete; see [the checkpoint](CHECKPOINT.md) for remaining demo and release work.
+**Resumed at user request on 2026-09-05.** Phases 0–8 and packaging implementation are complete; see [the checkpoint](CHECKPOINT.md) for final publication gates.
 
 Source: the ten numbered phases in `README.md` and `site/index.html`, plus the card, collector, registry, configuration, setup and auth examples on the site. The existing Pages canvas is a useful demo, but does not by itself satisfy the application and collector roadmap.
 
@@ -17,7 +17,7 @@ Each phase is assigned to a separate agent goal with evidence in `docs/phases/`.
 | 6 | 2, 4, 5 contract | Remaining performance/CWV, SEO, code quality, releases, errors, real users, opt-in AI usage and derived anomalies groups, with real collectors/ingestion and views | Complete — `docs/phases/phase-6.md` |
 | 7 | 3, 4, 6 | Explicit demo mode, deterministic seeds and fixtures for all cards, useful empty/missing-config states | Complete — `docs/phases/phase-7.md` |
 | 8 | 0, 2; integrate all routes | Open/password/trusted-header auth, setup screen, secure sessions and collector bearer access; production open mode refuses telemetry access | Complete — `docs/phases/phase-8.md` |
-| 9 | All | Reproducible self-host packaging/setup/collection commands, deployment docs, verified clean install and version 0.1.0 release artifacts | Pending |
+| 9 | All | Reproducible self-host packaging/setup/collection commands, deployment docs, verified clean install and version 0.1.0 release artifacts | Implemented and locally verified — `docs/phases/phase-9.md`; final CI/publication pending |
 
 ## Integration gates
 
