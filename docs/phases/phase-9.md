@@ -1,6 +1,6 @@
 # Phase 9 — self-host packaging and 0.1.0 artifacts
 
-Implementation and local package verification completed on 2026-09-05. Publishing the final tag/release, merging main, final CI and checking deployed Pages are parent-managed release gates; this report does not claim those have already happened.
+Implementation and package verification completed on 2026-09-05. Final integration and publication evidence is recorded in [release verification](../RELEASE-VERIFICATION.md).
 
 ## Delivered
 
