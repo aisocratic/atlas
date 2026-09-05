@@ -6,7 +6,7 @@ import { join } from "node:path"
 import { createServer } from "node:http"
 import { once } from "node:events"
 import { withDatabase, services } from "./support"
-import { inspectRepository } from "../../cards/repo-metrics/collector"
+import { inspectRepository, readBoundedSource, safeFile } from "../../cards/repo-metrics/collector"
 import { parseUsage } from "../../cards/ai-usage/collector"
 import type { TelemetryPresentation } from "../../lib/cards/presentation"
 
@@ -57,5 +57,57 @@ test("AI opt-in and explicit fixture files gate all reads; imports remain source
     assert.equal((envelope.data as TelemetryPresentation).rows[0][2], "123")
     const otherPath = join(root, "other.jsonl"); await writeFile(otherPath, "{}")
     assert.equal((await services(db, { cards: { "ai-usage": { optIn: true, options: { sourcePaths: [otherPath] } } } }).dataset("ai-usage")).status, "empty")
+  } finally { await rm(root, { recursive: true, force: true }) }
+}))
+
+
+test("bounded source reads handle short reads, growth, exact limits, and invalid readers", async () => {
+  const content = Buffer.from("é-fixture")
+  const read = async (buffer: Buffer, position: number) => {
+    const count = Math.min(2, buffer.length, content.length - position)
+    content.copy(buffer, 0, position, position + count)
+    return count
+  }
+  assert.equal(await readBoundedSource(read, content.length), "é-fixture")
+  await assert.rejects(readBoundedSource(read, content.length - 1), /file size limit/)
+  let bytesRequested = 0
+  await assert.rejects(readBoundedSource(async buffer => { bytesRequested += buffer.length; buffer.fill(65); return buffer.length }, 64_001), /file size limit/)
+  assert.equal(bytesRequested, 64_002)
+  for (const invalid of [-1, 0.5, 20]) await assert.rejects(readBoundedSource(async () => invalid, 4), /read completely/)
+  const root = await mkdtemp(join(tmpdir(), "atlas-bounded-"))
+  try {
+    const path = join(root, "source.json")
+    await writeFile(path, content)
+    assert.equal(await safeFile(path, content.length), "é-fixture")
+    await assert.rejects(safeFile(path, content.length - 1), /file size limit/)
+    await symlink(path, join(root, "link.json"))
+    await assert.rejects(safeFile(join(root, "link.json"), 100))
+    await assert.rejects(safeFile(root, 100))
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test("mixed AI exports preserve other sessions, later steps and Codex records while rejecting ambiguous Claude totals", () => {
+  const assistant = (session_id: string | undefined, id: string, input_tokens: number) => ({ type: "assistant", session_id, message: { id, usage: { input_tokens, output_tokens: 1 } } })
+  const result = { type: "result", session_id: "a", uuid: "result-a", usage: { input_tokens: 30, output_tokens: 2 } }
+  const events = [assistant("a", "one", 10), assistant("b", "one", 20), result, result, assistant("a", "one", 10), assistant("a", "later", 5), { type: "turn.completed", usage: { input_tokens: 7, output_tokens: 1 } }]
+  const parsed = parseUsage(JSON.stringify(events), "2026-09-05")
+  assert.equal(parsed.filter(row => row.tool === "claude").reduce((sum, row) => sum + row.input, 0), 55)
+  assert.equal(parsed.filter(row => row.tool === "codex").reduce((sum, row) => sum + row.input, 0), 7)
+  for (const ambiguous of [[assistant(undefined, "one", 10), result], [assistant("a", "one", 10), { ...result, session_id: undefined }]]) {
+    assert.throws(() => parseUsage(JSON.stringify(ambiguous), "2026-09-05"), /require session IDs/)
+  }
+})
+
+test("AI invalid later source leaves prior source snapshots unchanged", () => withDatabase(async db => {
+  const root = await mkdtemp(join(tmpdir(), "atlas-ai-atomic-")), first = join(root, "first.json"), second = join(root, "second.json")
+  const usage = (input_tokens: number) => JSON.stringify({ type: "turn.completed", usage: { input_tokens, output_tokens: 1 } })
+  try {
+    await writeFile(first, usage(10)); await writeFile(second, usage(20))
+    const app = services(db, { cards: { "ai-usage": { optIn: true, options: { sourcePaths: [first, second] } } } })
+    assert.equal((await app.collect("ai-usage")).status, "succeeded")
+    await writeFile(first, usage(100)); await writeFile(second, "{}")
+    assert.equal((await app.collect("ai-usage")).status, "failed")
+    const rows = await db.query(`SELECT input_tokens FROM ${db.table("ai_usage")} ORDER BY input_tokens`)
+    assert.deepEqual(rows.rows.map(row => Number(row.input_tokens)), [10, 20])
   } finally { await rm(root, { recursive: true, force: true }) }
 }))

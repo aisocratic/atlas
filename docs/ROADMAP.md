@@ -1,6 +1,6 @@
 # Atlas roadmap completion contract
 
-**Stopped at user request on 2026-09-05.** See [the checkpoint](CHECKPOINT.md) for unfinished work and verification limits.
+**Resumed at user request on 2026-09-05.** Phase 6 is complete; see [the checkpoint](CHECKPOINT.md) for remaining demo and release work.
 
 Source: the ten numbered phases in `README.md` and `site/index.html`, plus the card, collector, registry, configuration, setup and auth examples on the site. The existing Pages canvas is a useful demo, but does not by itself satisfy the application and collector roadmap.
 
@@ -14,7 +14,7 @@ Each phase is assigned to a separate agent goal with evidence in `docs/phases/`.
 | 3 | 0, 1, 2 | App canvas frame, dataset cache and persisted independent named/resizeable/reorderable layouts | Complete — `docs/phases/phase-3.md` |
 | 4 | 0, 2 | Card registry, generic dataset and collection routes, collector CLI/run locking, missing-requirement visibility and config enable/disable | Complete — `docs/phases/phase-4.md` |
 | 5 | 2, 4 | Real region-latency vertical slice: Globalping request/poll, stored measurements, query, rendered data, freshness and failure states | Complete — `docs/phases/phase-5.md` |
-| 6 | 2, 4, 5 contract | Remaining performance/CWV, SEO, code quality, releases, errors, real users, opt-in AI usage and derived anomalies groups, with real collectors/ingestion and views | In progress |
+| 6 | 2, 4, 5 contract | Remaining performance/CWV, SEO, code quality, releases, errors, real users, opt-in AI usage and derived anomalies groups, with real collectors/ingestion and views | Complete — `docs/phases/phase-6.md` |
 | 7 | 3, 4, 6 | Explicit demo mode, deterministic seeds and fixtures for all cards, useful empty/missing-config states | Pending |
 | 8 | 0, 2; integrate all routes | Open/password/trusted-header auth, setup screen, secure sessions and collector bearer access; production open mode refuses telemetry access | Complete — `docs/phases/phase-8.md` |
 | 9 | All | Reproducible self-host packaging/setup/collection commands, deployment docs, verified clean install and version 0.1.0 release artifacts | Pending |

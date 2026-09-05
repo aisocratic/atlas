@@ -58,8 +58,8 @@ the table above preserves the earlier SEO/empty-source observations.
 
 ## Verification
 
-- All **57** combined backend tests passed: storage, auth, registry/execution,
-  canvas model/API, regional provider, and remaining collectors. The **10**
+- All **60** combined backend tests passed: storage, auth, registry/execution,
+  canvas model/API, regional provider, and remaining collectors. The **13**
   dedicated collector tests exercise actual local HTTP provider transport and
   real PostgreSQL publication/query, repository/file fixtures, AI opt-in and
   deduplication, scoped ingestion and final metric updates, rate limits,
@@ -81,4 +81,39 @@ the table above preserves the earlier SEO/empty-source observations.
 CI commands added to the manifest are `pnpm test:collectors` and
 `pnpm test:e2e:collectors`, with the explicit local test database URL. Browser
 tests use only committed provider fixtures and unique test schemas. No
-production database, real private history, deployment, commit, or push occurred.
+production database, real private history, or deployment was used for verification.
+
+
+## Resumed final integration audit — 2026-09-05
+
+Phase 6 is complete. Added and passed three focused regressions in
+`tests/collectors/local.test.ts`:
+
+- Short reads preserve multibyte UTF-8 content; exact byte limits succeed;
+  a growing source is stopped after at most maximum + 1 bytes; invalid readers,
+  oversized files, final-component symlinks and directories are rejected.
+- Mixed Claude exports retain other sessions and later call steps, deduplicate
+  repeated results/covered messages, preserve Codex records, and reject
+  ambiguous assistant/result mixtures without session IDs.
+- A valid first source followed by an invalid second source leaves both prior
+  database snapshots unchanged, proving failed imports do not partially replace
+  previously collected usage.
+
+Revalidation commands, all passing against a freshly initialized local
+PostgreSQL database with per-test schemas:
+
+```sh
+ATLAS_TEST_DATABASE_URL=postgres://roadmap@127.0.0.1:55672/atlas_roadmap pnpm exec tsx --test tests/storage/*.test.ts tests/auth/*.test.ts tests/cards/*.test.ts tests/canvas/*.test.ts tests/region-latency/*.test.ts tests/collectors/*.test.ts
+ATLAS_TEST_DATABASE_URL=postgres://roadmap@127.0.0.1:55672/atlas_roadmap PLAYWRIGHT_CHANNEL=chrome pnpm test:e2e:collectors
+pnpm verify
+```
+
+Results: 60 backend tests, 2 production browser tests, 11 static canvas tests,
+plus design/font checks, typecheck and lint passed. Fresh desktop/mobile
+screenshots at the paths above were visually inspected: nine cards, bounded
+content scrolling, useful missing-config/history states, and no page overflow.
+The existing Next standalone/start warning remains a packaging concern for
+phase 9; it did not prevent production browser verification.
+
+Demo/seeds (phase 7), packaging/release (phase 9), and final full-release CI
+remain outside this completed phase.
