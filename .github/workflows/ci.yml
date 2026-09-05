@@ -47,6 +47,9 @@ jobs:
       - run: pnpm test:auth
       - run: pnpm test:canvas
       - run: pnpm build
+      - run: pnpm test:package
+      - run: docker build -t atlas:ci .
+      - run: docker run --rm --network host -e ATLAS_TEST_DATABASE_URL atlas:ci pnpm test:package
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - run: pnpm test:e2e:auth

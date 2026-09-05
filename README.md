@@ -9,10 +9,10 @@ Core Web Vitals, SEO audits, region latency probes, repo metrics, releases,
 server errors, real-user monitoring — and owns the schema they write to. Point it
 at any Postgres, run one command, and the cards fill in.
 
-> **Status: in development.** The Next.js application, PostgreSQL storage,
+> **Status: v0.1.0 release candidate.** The Next.js application, PostgreSQL storage,
 > authentication, and generic card/collector framework are implemented and tested.
 > The public GitHub Pages canvas uses sample data. Follow the
-> [phase evidence](docs/ROADMAP.md) for the remaining application and collector work.
+> [phase evidence](docs/ROADMAP.md) for implementation evidence and [deployment instructions](docs/DEPLOYMENT.md) for source and Docker installation.
 
 ## Why it exists
 
@@ -85,7 +85,7 @@ Storage errors are shown in the toolbar; in that case edits remain in memory.
 Unreadable old saves are preserved rather than overwritten. The storage adapter
 in `site/dashboard/storage.mjs` is separate from the canvas state model.
 
-## Planned cards
+## Cards
 
 | group | what it shows | collector |
 |---|---|---|
@@ -122,8 +122,8 @@ See [authentication](docs/AUTH.md) and [security policy](SECURITY.md).
 - [x] **Phase 3** — the frame: canvas layout, cache, saved arrangements
 - [x] **Phase 4** — the card registry and the two generic routes
 - [x] **Phase 5** — first vertical slice: region latency
-- [ ] **Phase 6** — the remaining cards
-- [ ] **Phase 7** — demo mode, seed data, fixtures
+- [x] **Phase 6** — the remaining cards
+- [x] **Phase 7** — demo mode, seed data, fixtures
 - [x] **Phase 8** — auth adapters and the setup screen
 - [ ] **Phase 9** — packaging and `v0.1.0`
 

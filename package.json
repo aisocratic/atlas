@@ -1,6 +1,6 @@
 {
   "name": "aisocratic-atlas",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.8.0",
@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
     "build": "next build",
-    "start": "next start",
+    "start": "node scripts/start.mjs",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint app components cards lib scripts next.config.mjs postcss.config.mjs atlas.config.ts",
     "test": "node --test tests/dashboard.test.mjs",
@@ -34,7 +34,9 @@
     "test:e2e:collectors": "playwright test --config playwright.collectors.config.mjs",
     "seed": "tsx scripts/db/seed.ts",
     "test:demo": "tsx --test tests/demo/*.test.ts",
-    "test:e2e:demo": "playwright test --config playwright.demo.config.mjs"
+    "test:e2e:demo": "playwright test --config playwright.demo.config.mjs",
+    "release:pack": "node scripts/release.mjs",
+    "test:package": "node scripts/verify-package.mjs"
   },
   "dependencies": {
     "@aisocratic/design": "file:vendor/aisocratic-design-0.2.0.tgz",

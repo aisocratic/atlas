@@ -27,7 +27,7 @@ For a production build, keep these environment values when starting the server a
 - The normal generic `/api/datasets/<id>` route and card components serve the fixtures. Every envelope carries `provenance: "synthetic"`; cards say “synthetic fixture” and “fixed sample dates” rather than claiming fresh measurements. Synthetic probes include a timeout; dependencies/costs demonstrate unknown values; alerts include active and resolved findings.
 - A missing fixture produces an actionable seed message. Unavailable demo storage produces a demo setup error. Neither case invokes a live query or collector. Date ranges excluding the fixed snapshot produce an explicitly synthetic empty state. `limit` truncates displayed rows/regions; the fixture is a fixed snapshot, not a time-series query engine.
 - Collection through the API or CLI is disabled in demo mode. All push ingestion is refused. No provider calls, local checkout scans or AI usage files are read. Disabled card configuration remains respected.
-- To use live measurements, stop the server, set `ATLAS_DEMO=false`, configure the actual site/repository and optional sources, run `pnpm setup`, and restart. Demo dashboards stay in their isolated schema; live dashboards and measurements are unchanged.
+- To use live measurements, stop the server, set `ATLAS_DEMO=false`, configure the actual site/repository and optional sources, run `pnpm run setup`, and restart. Demo dashboards stay in their isolated schema; live dashboards and measurements are unchanged.
 
 The [Pages canvas](https://aisocratic.github.io/atlas/) is a separate static synthetic demonstration. The application demo exercises PostgreSQL-backed dashboard persistence and the same authenticated dataset routes as the live app.
 
