@@ -1,5 +1,6 @@
 import { cp, access } from 'node:fs/promises'
-import { spawn } from 'node:child_process'
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import nextEnv from '@next/env'
 nextEnv.loadEnvConfig(process.cwd(), false)
 const options = { port: process.env.PORT ?? '3000', hostname: process.env.ATLAS_HOST ?? '127.0.0.1' }
@@ -13,8 +14,8 @@ if (!/^\d+$/.test(options.port) || Number(options.port) < 1 || Number(options.po
 await access('.next/standalone/server.js')
 await cp('.next/static', '.next/standalone/.next/static', { recursive: true })
 try { await access('public'); await cp('public', '.next/standalone/public', { recursive: true }) } catch (error) { if (error.code !== 'ENOENT') throw error }
-const child = spawn(process.execPath, ['.next/standalone/server.js'], {
-  stdio: 'inherit', env: { ...process.env, NODE_ENV: 'production', HOSTNAME: options.hostname, PORT: options.port },
-})
-for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => child.kill(signal))
-child.on('exit', code => process.exit(code ?? 1))
+// Run Next in this process so service-manager signals reach the HTTP server.
+process.env.NODE_ENV = 'production'
+process.env.HOSTNAME = options.hostname
+process.env.PORT = options.port
+await import(pathToFileURL(resolve('.next/standalone/server.js')).href)

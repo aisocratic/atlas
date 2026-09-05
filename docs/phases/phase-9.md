@@ -23,3 +23,9 @@ Implementation and local package verification completed on 2026-09-05. Publishin
 ## Final publication gates
 
 Run complete CI on the final branch/merge commit, publish Pages, generate the source archive and checksum from the final release commit, attach them to `v0.1.0`, and inspect the release/deployed site. Only then mark the whole release roadmap complete. Source archives are reproducible for a given committed tree; Docker base tags can receive security updates, so deployments requiring byte-identical images must pin the resolved image digests.
+
+## CI process-lifecycle correction
+
+Final CI exposed an orphaned server after source smoke: terminating only the pnpm wrapper allowed Docker's subsequent test on port 4295 to reach the old password session configuration. The production launcher now imports Next in its own process, and the Docker entrypoint invokes Node directly. The smoke harness uses an isolated process group for pnpm/shell/Node, terminates that whole group, awaits exit, and verifies the listening socket is released. It refuses occupied ports before migrations and detects early startup failure.
+
+Regression evidence: two consecutive source smoke tests and two consecutive Linux Docker smoke tests passed on the same port 4295; each confirmed the socket was free after shutdown. `node scripts/verify-package-port.mjs` proved an occupied port fails before database access. The default Docker entrypoint served setup and stopped promptly with exit 143 on SIGTERM, without forced SIGKILL. CI now repeats source smoke and runs the occupied-port regression before its Docker smoke. `pnpm lint` passed.

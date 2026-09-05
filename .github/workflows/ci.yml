@@ -47,7 +47,11 @@ jobs:
       - run: pnpm test:auth
       - run: pnpm test:canvas
       - run: pnpm build
-      - run: pnpm test:package
+      - name: Package startup and repeated teardown on the same port
+        run: |
+          node scripts/verify-package-port.mjs
+          pnpm test:package
+          pnpm test:package
       - run: docker build -t atlas:ci .
       - run: docker run --rm --network host -e ATLAS_TEST_DATABASE_URL atlas:ci pnpm test:package
       - run: pnpm exec playwright install --with-deps chromium
