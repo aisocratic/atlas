@@ -31,7 +31,10 @@
     "test:canvas": "tsx --test tests/canvas/*.test.ts",
     "test:e2e:canvas": "playwright test --config playwright.canvas.config.mjs",
     "test:collectors": "tsx --test tests/collectors/*.test.ts",
-    "test:e2e:collectors": "playwright test --config playwright.collectors.config.mjs"
+    "test:e2e:collectors": "playwright test --config playwright.collectors.config.mjs",
+    "seed": "tsx scripts/db/seed.ts",
+    "test:demo": "tsx --test tests/demo/*.test.ts",
+    "test:e2e:demo": "playwright test --config playwright.demo.config.mjs"
   },
   "dependencies": {
     "@aisocratic/design": "file:vendor/aisocratic-design-0.2.0.tgz",

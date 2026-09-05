@@ -175,3 +175,7 @@ storage, card execution, authentication and production browser workflows.
 MIT © AI Socratic. The design system is [`@aisocratic/design`](https://github.com/aisocratic/stoa).
 Fonts are Space Grotesk, Newsreader and JetBrains Mono under the SIL Open Font
 License 1.1, loaded by the website.
+
+### Application demo
+
+For an authenticated PostgreSQL-backed workspace with all nine synthetic cards, see [Demo setup and isolation](docs/DEMO.md). Enable `ATLAS_DEMO=true` and run `pnpm seed`; fixtures and dashboard changes stay in a reserved demo schema.

@@ -1,3 +1,4 @@
+import { demoMode, runtimeSchema } from "../demo/mode";
 import { authSettings, type AuthEnvironment } from "../auth";
 import { resolveConfig } from "../config";
 
@@ -6,7 +7,7 @@ export interface SetupStatus { authentication: boolean; database: boolean; site:
 export function setupStatus(input: unknown, env: AuthEnvironment = process.env): SetupStatus {
   const settings = authSettings(env);
   let site = false; let configuration = true;
-  try { site = Boolean(resolveConfig(input, env).siteUrl); } catch { configuration = false; }
+  try { site = Boolean(resolveConfig(input, env).siteUrl) || demoMode(env); runtimeSchema(env); } catch { configuration = false; }
   let database = false;
   try {
     const url = new URL(env.DATABASE_URL || "");

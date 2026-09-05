@@ -1,3 +1,4 @@
+import { demoMode } from "../demo/mode"
 import { createHash, timingSafeEqual } from "node:crypto"
 import type { AtlasConfig } from "../config"
 import type { Database, Queryable } from "../db/pool"
@@ -60,6 +61,7 @@ export function createIngestHandlers(dependencies: { config: AtlasConfig; env: E
   return {
     options(request: Request) { try { const origin = sourceOrigin(dependencies.config); if (request.headers.get("origin") !== origin) return response(403, { error: "Origin not allowed." }); return new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": origin, Vary: "Origin", "Access-Control-Allow-Methods": "POST", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "600" } }) } catch { return response(503, { error: "Ingestion is not configured." }) } },
     async post(request: Request, kind: IngestKind) {
+      if (demoMode(dependencies.env)) return response(403, { error: "Ingestion is disabled in demo mode." })
       let allowedOrigin: string | undefined
       try {
         const origin = sourceOrigin(dependencies.config), cardId = kind === "errors" ? "server-errors" : "real-users"

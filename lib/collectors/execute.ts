@@ -1,3 +1,4 @@
+import { demoMode } from "../demo/mode"
 import { startCollectorRun, heartbeatCollectorRun, completeCollectorRun, failCollectorRun, type CollectorLease } from "../db/collectors"
 import { invalidateCache } from "../db/cache"
 import type { Database } from "../db/pool"
@@ -20,6 +21,7 @@ export async function executeCollection({ definition, context, database, fetch: 
   definition: CardDefinition; context: CardContext; database: () => Database; fetch?: typeof globalThis.fetch
 }): Promise<CollectionOutcome> {
   const id = definition.info.id
+  if (demoMode(context.env)) return { id, status: "unsupported", reason: "Demo mode contains synthetic fixtures. Collection is disabled." }
   if (!context.options.enabled) return { id, status: "disabled", reason: "This card is disabled in atlas.config.ts." }
   const missing = missingRequirements(definition, context)
   if (missing.length) return { id, status: "missing-config", missing, reason: missing.map(item => item.reason).join(" ") }

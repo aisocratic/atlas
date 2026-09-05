@@ -20,6 +20,7 @@ export interface RunSummary {
   error: string | null
 }
 export interface DatasetEnvelope<T = Json> {
+  provenance?: "synthetic"
   id: string
   status: "ready" | "empty" | "missing-config" | "error" | "disabled"
   data: T | null

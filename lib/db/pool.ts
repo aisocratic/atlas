@@ -1,3 +1,4 @@
+import { runtimeSchema } from "../demo/mode";
 import { Pool, type PoolClient, type PoolConfig, type QueryResult, type QueryResultRow } from "pg";
 
 export const TABLES = ["dashboards", "dashboard_layouts", "dataset_cache", "collector_runs", "lighthouse_reports", "web_vitals", "seo_audits", "seo_findings", "region_latency_samples", "region_latency_daily", "repo_metrics", "dependency_health", "releases", "error_logs", "page_views", "ai_usage", "anomalies", "schema_migrations", "ingest_rate_buckets", "ingest_versions"] as const;
@@ -28,7 +29,7 @@ export function databaseOptionsFromEnv(env: Readonly<Record<string, string | und
   if (!Number.isInteger(max) || max < 1 || max > 100) throw new Error("DATABASE_POOL_MAX must be an integer from 1 to 100.");
   const mode = env.DATABASE_SSL;
   if (mode && mode !== "require" && mode !== "disable") throw new Error("DATABASE_SSL must be require or disable.");
-  return { connectionString: env.DATABASE_URL, schema: env.ATLAS_SCHEMA, max, ssl: mode === "require" ? { rejectUnauthorized: true } : mode === "disable" ? false : undefined };
+  return { connectionString: env.DATABASE_URL, schema: runtimeSchema(env), max, ssl: mode === "require" ? { rejectUnauthorized: true } : mode === "disable" ? false : undefined };
 }
 export function createDatabase(options: DatabaseOptions): Database {
   const schema = schemaName(options.schema);

@@ -1,3 +1,5 @@
+import { demoMode } from "../demo/mode"
+import { demoDataset } from "../demo/dataset"
 import { createHash } from "node:crypto"
 import type { AtlasConfig, CardConfig } from "../config"
 import { readCache, writeCache } from "../db/cache"
@@ -77,6 +79,7 @@ export class CardServices {
     const { definition, context } = this.resolve(id)
     const envelope = emptyEnvelope(id)
     if (!context.options.enabled) return { ...envelope, status: "disabled", reason: "This card is disabled in atlas.config.ts." }
+    if (demoMode(this.dependencies.env)) return demoDataset(this.dependencies.database, id, query)
     const missing = missingRequirements(definition, context)
     if (missing.length) return { ...envelope, status: "missing-config", missing, reason: missing.map(item => item.reason).join(" ") }
     let cached: Awaited<ReturnType<typeof readCache<DatasetEnvelope>>> = null

@@ -42,6 +42,7 @@ jobs:
       - run: pnpm test:storage
       - run: pnpm test:cards
       - run: pnpm test:region
+      - run: pnpm test:demo
       - run: pnpm test:collectors
       - run: pnpm test:auth
       - run: pnpm test:canvas
@@ -52,6 +53,7 @@ jobs:
       - run: pnpm test:e2e:app
       - run: pnpm test:e2e:canvas
       - run: pnpm test:e2e:collectors
+      - run: pnpm test:e2e:demo
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: failure()
         with:

@@ -14,8 +14,9 @@ export function RegionLatencyCard({ dataset }: CardProps) {
     <section aria-labelledby={titleId} className={`${cardSurface} h-full overflow-auto p-5`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id={titleId} className="text-lead font-medium">{info.title}</h2>
-        <span className="font-code text-micro text-muted-foreground">{dataset.stale ? "Stale data" : dataset.run?.status === "running" ? "Collecting" : "HTTP probes"}</span>
+        <span className="font-code text-micro text-muted-foreground">{dataset.provenance === "synthetic" ? "Synthetic probes" : dataset.stale ? "Stale data" : dataset.run?.status === "running" ? "Collecting" : "HTTP probes"}</span>
       </div>
+      {dataset.provenance === "synthetic" && <p className="mt-2 font-medium text-body">Demo · synthetic fixture · fixed sample dates</p>}
       {dataset.reason || dataset.error ? <p role={dataset.error ? "status" : undefined} className="mt-3 text-body text-muted-foreground">{dataset.error ?? dataset.reason}</p> : null}
       {data?.regions.length ? <>
         <MetricCard className="mt-4" label="Median overall TTFB" value={milliseconds(data.summary.medianTtfbMs)} size="compact" />
@@ -35,7 +36,7 @@ export function RegionLatencyCard({ dataset }: CardProps) {
           <p className="mt-3 break-all text-micro text-muted-foreground">Source: {data.source}{data.paths.length === 1 ? data.paths[0] : ""}. HEAD requests include DNS, TCP, TLS when applicable, and server wait. This measures the initial response, not visual page load.</p>
         </details>
       </> : <p className="mt-4 text-body text-muted-foreground">{dataset.status === "missing-config" ? "Configuration needed before measurements can run." : "No regional measurements yet."}</p>}
-      <p className="mt-4 font-code text-micro text-muted-foreground">{dataset.updatedAt ? <>Measured <time dateTime={dataset.updatedAt}>{dataset.updatedAt.replace("T", " ").replace(/\.\d+Z$/, " UTC")}</time></> : "Awaiting measurements"}</p>
+      <p className="mt-4 font-code text-micro text-muted-foreground">{dataset.updatedAt ? <>{dataset.provenance === "synthetic" ? "Fixture dated " : "Measured "}<time dateTime={dataset.updatedAt}>{dataset.updatedAt.replace("T", " ").replace(/\.\d+Z$/, " UTC")}</time></> : "Awaiting measurements"}</p>
     </section>
   )
 }
