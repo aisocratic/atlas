@@ -12,7 +12,7 @@ at any Postgres, run one command, and the cards fill in.
 > **Status: v0.1.0.** The Next.js application, PostgreSQL storage,
 > authentication, and generic card/collector framework are implemented and tested.
 > The public GitHub Pages canvas uses sample data. Follow the
-> [phase evidence](docs/ROADMAP.md) for implementation evidence and [deployment instructions](docs/DEPLOYMENT.md) for source and Docker installation.
+> [deployment instructions](docs/DEPLOYMENT.md) for source and Docker installation.
 
 ## Why it exists
 
@@ -114,19 +114,6 @@ and a trusted identity header plus a proxy secret. Browser sessions require CSRF
 validation for writes. Optional bearer credentials permit collection only.
 See [authentication](docs/AUTH.md) and [security policy](SECURITY.md).
 
-## Roadmap
-
-- [x] **Phase 0** — scaffold, design substrate, one rendered card
-- [x] **Phase 1** — vendored UI substrate, fonts, tokens
-- [x] **Phase 2** — storage: pool, migrations, the seventeen tables
-- [x] **Phase 3** — the frame: canvas layout, cache, saved arrangements
-- [x] **Phase 4** — the card registry and the two generic routes
-- [x] **Phase 5** — first vertical slice: region latency
-- [x] **Phase 6** — the remaining cards
-- [x] **Phase 7** — demo mode, seed data, fixtures
-- [x] **Phase 8** — auth adapters and the setup screen
-- [x] **Phase 9** — packaging and `v0.1.0`
-
 ## Design and development
 
 The site imports `@aisocratic/design` from the
@@ -179,3 +166,24 @@ License 1.1, loaded by the website.
 ### Application demo
 
 For an authenticated PostgreSQL-backed workspace with all nine synthetic cards, see [Demo setup and isolation](docs/DEMO.md). Enable `ATLAS_DEMO=true` and run `pnpm seed`; fixtures and dashboard changes stay in a reserved demo schema.
+
+### Analytics design preview
+
+Open the [interactive analytics preview](https://aisocratic.github.io/atlas/preview/).
+For local development, run `pnpm dev --port 3015` and open http://127.0.0.1:3015/preview.
+`pnpm build:pages` bundles the same components into `dist/pages/` for GitHub Pages.
+This standalone preview needs no database or authentication and contains only
+synthetic fixtures. It combines AI Socratic admin card styling with Codex-style
+stacked usage bars and stacked area charts for turns, plugin calls, and skills.
+Date ranges, daily/weekly aggregation, clickable legends, model/surface switching,
+favourites, expanded charts, and layout editing work locally. Card order, widths,
+and favourites persist in browser storage; the production telemetry workspace
+at `/` continues to use its existing authenticated database routes.
+
+Check fixture aggregation with `pnpm exec tsx --test tests/analytics/*.test.ts`.
+
+The preview also includes Community Roles and Working Status donuts, Devices
+share bars, ranked Industries and Newsletter Sources, Backlog progress bars,
+Lighthouse score rings, grouped Signups, Server Errors, and Luma referral metrics.
+Community and backlog breakdowns use the latest snapshot inside the selected
+range; activity cards sum the range. New cards append to previously saved layouts.

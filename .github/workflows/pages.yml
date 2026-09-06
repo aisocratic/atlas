@@ -1,13 +1,15 @@
 name: Deploy landing page
 
-# The site has no application build step. Verify the shared design and
-# interactive dashboard before uploading the static directory to Pages.
+# Build the static site and shared React analytics preview for GitHub Pages.
 
 on:
   push:
     branches: [main]
     paths:
       - "site/**"
+      - "components/analytics/**"
+      - "app/font-assets/**"
+      - "scripts/build-pages.mjs"
       - "tests/**"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -57,13 +59,16 @@ jobs:
       - name: Test desktop and mobile dashboard interactions
         run: pnpm test:e2e
 
+      - name: Build static analytics preview
+        run: pnpm build:pages
+
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
-          path: site
+          path: dist/pages
 
       - name: Deploy to GitHub Pages
         id: deployment
