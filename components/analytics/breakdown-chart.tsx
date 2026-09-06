@@ -2,11 +2,11 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Monitor, Smartphone, Tablet } from "lucide-react";
+import { ChartValueTooltip } from "./chart-tooltip";
 import type { Definition } from "./sample-data";
 
 export interface BreakdownRow { name: string; value: number; color: string }
 const number = (value: number) => value.toLocaleString("en-US");
-const tooltipStyle = { background: "var(--card)", border: "1px solid var(--border)", borderRadius: 10, color: "var(--foreground)", fontSize: 12 };
 
 export function BreakdownChart({ definition, rows }: { definition: Definition; rows: BreakdownRow[] }) {
   const total = rows.reduce((sum, row) => sum + row.value, 0);
@@ -15,7 +15,7 @@ export function BreakdownChart({ definition, rows }: { definition: Definition; r
 
   if (definition.kind === "donut") return <div className="breakdown-donut">
     <div className="breakdown-ring" role="img" aria-label={rows.map(row => `${row.name}: ${number(row.value)}, ${share(row.value).toFixed(1)}%`).join("; ")}>
-      <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={rows} dataKey="value" nameKey="name" innerRadius="67%" outerRadius="92%" paddingAngle={2} cornerRadius={3} stroke="var(--card)" strokeWidth={2} isAnimationActive={false}>{rows.map(row => <Cell key={row.name} fill={row.color} />)}</Pie><Tooltip contentStyle={tooltipStyle} /></PieChart></ResponsiveContainer>
+      <ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={rows} dataKey="value" nameKey="name" innerRadius="67%" outerRadius="92%" paddingAngle={2} cornerRadius={3} stroke="var(--card)" strokeWidth={2} isAnimationActive={false}>{rows.map(row => <Cell key={row.name} fill={row.color} />)}</Pie><Tooltip content={<ChartValueTooltip />} /></PieChart></ResponsiveContainer>
       <div className="breakdown-center"><strong>{number(total)}</strong><small>people</small></div>
     </div>
     <ul className="breakdown-values">{rows.map(row => <li key={row.name}><i style={{ background: row.color }} /><span>{row.name}</span><strong>{number(row.value)}</strong><small>{share(row.value).toFixed(1)}%</small></li>)}</ul>

@@ -187,3 +187,8 @@ share bars, ranked Industries and Newsletter Sources, Backlog progress bars,
 Lighthouse score rings, grouped Signups, Server Errors, and Luma referral metrics.
 Community and backlog breakdowns use the latest snapshot inside the selected
 range; activity cards sum the range. New cards append to previously saved layouts.
+
+The analytics preview uses Stoa selectboxes and compact chart value tooltips.
+Edit mode provides a 12-column canvas with collision handling, edge/corner resize,
+Auto, Compact, Snap, Reset, and Undo (Ctrl/⌘+Z). Each category saves its own layout
+in this browser. Keyboard arrow keys operate focused move and resize handles.

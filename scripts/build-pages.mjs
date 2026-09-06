@@ -1,4 +1,6 @@
 import { build } from "esbuild";
+import postcss from "postcss";
+import tailwindcss from "@tailwindcss/postcss";
 import { cp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,6 +25,9 @@ await mkdir(path.join(output, "preview/fonts"), { recursive: true });
 for (const name of ["space-grotesk.ttf", "newsreader.ttf", "spacegrotesk-OFL.txt", "newsreader-OFL.txt"]) {
   await cp(path.join(root, "app/font-assets", name), path.join(output, "preview/fonts", name));
 }
+const stylesheet = await readFile(path.join(root, "app/globals.css"), "utf8");
+const styles = await postcss([tailwindcss()]).process(stylesheet, { from: path.join(root, "app/globals.css") });
+await writeFile(path.join(output, "preview/stoa.css"), styles.css);
 // The same relative links work locally and under the repository's Pages prefix.
 const html = await readFile(path.join(root, "site/preview/index.html"), "utf8");
 await writeFile(path.join(output, "preview/index.html"), html);

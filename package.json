@@ -17,7 +17,7 @@
     "test:e2e": "playwright test",
     "design:sync": "node scripts/sync-design.mjs",
     "design:check": "node scripts/sync-design.mjs --check && node site/scripts/sync-design.mjs --check && node scripts/check-fonts.mjs",
-    "verify": "pnpm design:check && pnpm typecheck && pnpm lint && pnpm test",
+    "verify": "pnpm design:check && pnpm typecheck && pnpm lint && pnpm test && pnpm test:analytics",
     "setup": "tsx scripts/db/setup.ts",
     "db:migrate": "tsx scripts/db/migrate.ts",
     "db:schema": "tsx scripts/db/schema.ts",
@@ -37,11 +37,14 @@
     "test:e2e:demo": "playwright test --config playwright.demo.config.mjs",
     "release:pack": "node scripts/release.mjs",
     "test:package": "node scripts/verify-package.mjs",
-    "build:pages": "node scripts/build-pages.mjs"
+    "build:pages": "node scripts/build-pages.mjs",
+    "test:analytics": "tsx --test tests/analytics/*.test.*"
   },
   "dependencies": {
     "@aisocratic/design": "file:vendor/aisocratic-design-0.2.0.tgz",
     "@next/env": "16.3.0",
+    "@radix-ui/react-dialog": "^1.1.23",
+    "@radix-ui/react-select": "^2.3.7",
     "@radix-ui/react-slot": "1.2.4",
     "cheerio": "^1.2.0",
     "lucide-react": "^1.29.0",
@@ -66,6 +69,7 @@
     "esbuild": "^0.28.2",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.0",
+    "postcss": "^8.5.28",
     "tailwindcss": "^4.1.9",
     "tsx": "^4.21.0"
   }
