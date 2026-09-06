@@ -1,4 +1,5 @@
 import { build } from "esbuild";
+import { createHash } from "node:crypto";
 import postcss from "postcss";
 import tailwindcss from "@tailwindcss/postcss";
 import { cp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
@@ -10,14 +11,16 @@ const output = path.join(root, "dist/pages");
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 await cp(path.join(root, "site"), output, { recursive: true, filter: source => !source.endsWith(".tsx") });
-await build({
+const bundle = await build({
   entryPoints: [path.join(root, "site/preview/entry.tsx")],
   bundle: true,
   format: "esm",
   platform: "browser",
   target: "es2022",
   minify: true,
-  outfile: path.join(output, "preview/preview.js"),
+  outdir: path.join(output, "preview"),
+  entryNames: "preview-[hash]",
+  metafile: true,
   define: { "process.env.NODE_ENV": '"production"' },
   external: ["./fonts/*"],
 });
@@ -27,8 +30,15 @@ for (const name of ["space-grotesk.ttf", "newsreader.ttf", "spacegrotesk-OFL.txt
 }
 const stylesheet = await readFile(path.join(root, "app/globals.css"), "utf8");
 const styles = await postcss([tailwindcss()]).process(stylesheet, { from: path.join(root, "app/globals.css") });
-await writeFile(path.join(output, "preview/stoa.css"), styles.css);
+const stylesName = `stoa-${createHash("sha256").update(styles.css).digest("hex").slice(0, 12)}.css`;
+await writeFile(path.join(output, "preview", stylesName), styles.css);
 // The same relative links work locally and under the repository's Pages prefix.
-const html = await readFile(path.join(root, "site/preview/index.html"), "utf8");
+const outputs = Object.keys(bundle.metafile.outputs);
+const scriptName = path.basename(outputs.find(name => name.endsWith(".js")));
+const cssName = path.basename(outputs.find(name => name.endsWith(".css")));
+const html = (await readFile(path.join(root, "site/preview/index.html"), "utf8"))
+  .replace("./preview.js", `./${scriptName}`)
+  .replace("./preview.css", `./${cssName}`)
+  .replace("./stoa.css", `./${stylesName}`);
 await writeFile(path.join(output, "preview/index.html"), html);
 process.stdout.write(`Built GitHub Pages site with analytics preview in ${output}\n`);
