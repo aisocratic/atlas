@@ -14,7 +14,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint app components cards lib scripts next.config.mjs postcss.config.mjs atlas.config.ts",
     "test": "node --test tests/dashboard.test.mjs",
-    "test:e2e": "playwright test",
+    "test:e2e": "pnpm build:pages && playwright test",
     "design:sync": "node scripts/sync-design.mjs",
     "design:check": "node scripts/sync-design.mjs --check && node site/scripts/sync-design.mjs --check && node scripts/check-fonts.mjs",
     "verify": "pnpm design:check && pnpm typecheck && pnpm lint && pnpm test && pnpm test:analytics",

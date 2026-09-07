@@ -10,7 +10,7 @@ async function newBoard(page, name) {
   await expect(page.getByRole("tab", { name, exact: true })).toHaveAttribute("aria-selected", "true");
 }
 test.beforeEach(async ({ page }) => {
-  await page.goto("/#workspace");
+  await page.goto("/canvas/#workspace");
   await expect(page.getByRole("tab", { name: "Overview", exact: true })).toBeVisible();
 });
 

@@ -61,9 +61,6 @@ jobs:
       - name: Test desktop and mobile dashboard interactions
         run: pnpm test:e2e
 
-      - name: Build static analytics preview
-        run: pnpm build:pages
-
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
 

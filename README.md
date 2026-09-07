@@ -29,18 +29,18 @@ at any Postgres, run one command, and the cards fill in.
 
 ## Run the website
 
-The public project website and interactive demo canvas are in `site/`. Create
-named dashboard tabs, drag and resize cards, and return to your saved layouts.
-Metrics are sample data; the demo does not connect to the application database.
+The product website and interactive demo live in `site/`. Build and serve them:
 
-```bash
-git clone https://github.com/aisocratic/atlas && cd atlas
-python3 -m http.server 4175 --directory site
+```sh
+pnpm install --frozen-lockfile
+pnpm build:pages
+python3 -m http.server 4175 --directory dist/pages
 ```
 
-Open http://localhost:4175. No Node dependencies, database, or sibling repository
-are needed. Serve over HTTP as shown so the browser can load JavaScript modules.
-The dashboard uses illustrative data.
+Open http://localhost:4175 for the product overview and http://localhost:4175/demo/
+for the working dashboard with sixteen sample cards. The demo needs no account or
+database. The older `/preview/` URL remains supported, and the original canvas is
+preserved at `/canvas/` with its saved browser layouts.
 
 ## Run the application
 
@@ -148,10 +148,10 @@ The suite starts its own static server and covers desktop and mobile input.
 To use an installed Chrome instead of downloading Chromium, run
 `PLAYWRIGHT_CHANNEL=chrome pnpm test:e2e`.
 
-Before a pull request, run the integrity check, serve `site/`, and check desktop
+Before a pull request, run the integrity check, build and serve `dist/pages/`, and check desktop
 and mobile layouts, navigation, and the dark → light → system theme cycle.
 The Pages workflow runs the canvas/state/storage tests, verifies design integrity,
-and deploys `site/` when changes reach `main`. The tests cover independent boards,
+and deploys `dist/pages/` when changes reach `main`. The tests cover independent boards,
 collision handling, resize bounds, keyboard/button ordering, persistence, and
 storage failures. Browser checks cover actual tab, dialog, drag, resize, theme,
 and mobile interactions. The application CI separately verifies real PostgreSQL
@@ -169,7 +169,7 @@ For an authenticated PostgreSQL-backed workspace with all nine synthetic cards, 
 
 ### Analytics design preview
 
-Open the [interactive analytics preview](https://aisocratic.github.io/atlas/preview/).
+Open the [interactive analytics preview](https://aisocratic.github.io/atlas/demo/).
 For local development, run `pnpm dev --port 3015` and open http://127.0.0.1:3015/preview.
 `pnpm build:pages` bundles the same components into `dist/pages/` for GitHub Pages.
 This standalone preview needs no database or authentication and contains only
