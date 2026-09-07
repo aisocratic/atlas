@@ -24,5 +24,5 @@ test("previous preview links still open the interactive dashboard", async ({ pag
   await page.goto("/preview/");
   await expect(page.getByRole("article")).toHaveCount(16);
   if (testInfo.project.name === "mobile") await page.getByRole("button", { name: "Open menu", exact: true }).click();
-  await expect(page.getByRole("link", { name: "Demo", exact: true })).toHaveAttribute("href", "../demo/");
+  await expect(page.getByRole("navigation", { name: "Primary", exact: true }).getByRole("link", { name: "Demo", exact: true })).toHaveAttribute("href", "../demo/");
 });
