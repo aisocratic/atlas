@@ -38,7 +38,7 @@ python3 -m http.server 4175 --directory dist/pages
 ```
 
 Open http://localhost:4175 for the product overview and http://localhost:4175/demo/
-for the working dashboard with sixteen sample cards. The demo needs no account or
+for the working dashboard with twenty sample cards. The demo needs no account or
 database. The older `/preview/` URL remains supported, and the original canvas is
 preserved at `/canvas/` with its saved browser layouts.
 

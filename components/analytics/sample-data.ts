@@ -15,6 +15,10 @@ export const definitions = [
   { id: "signups", title: "Signups", subtitle: "New registrations by account type", category: "Community", kind: "grouped", series: ["Users", "Members"], colors: ["#edbe49", "#72859c"] },
   { id: "errors", title: "Server Errors", subtitle: "Captured error events per period", category: "Engineering", kind: "bar", series: ["Errors"], colors: ["#e87979"] },
   { id: "luma", title: "Luma Referrals", subtitle: "Parallel counts for event-referred traffic, not conversion stages", category: "Events", kind: "metrics", series: ["Sessions", "Users", "New Users"], colors: ["#edbe49", "#72859c", "#74c4a5"] },
+  { id: "visitor-flow", title: "Visitor flow", subtitle: "Sankey diagram · sources → landing pages → outcomes", category: "Audience", kind: "sankey", series: ["Direct", "Search", "Social", "Referral"], colors: ["#74c4a5", "#5484ec", "#ad8ad7", "#edbe49"] },
+  { id: "activity-heatmap", title: "Activity heatmap", subtitle: "AI activity by weekday and hour · UTC", category: "AI usage", kind: "heatmap", series: ["Desktop App", "CLI", "Web"], colors: ["#74c4a5", "#5484ec", "#ad8ad7"] },
+  { id: "token-map", title: "Token usage", subtitle: "Treemap · tokens by model and tool", category: "AI usage", kind: "treemap", series: ["gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-terra"], colors: ["#74c4a5", "#5484ec", "#ad8ad7"] },
+  { id: "page-health", title: "Page health", subtitle: "Bubble chart · traffic, load time, and errors", category: "Engineering", kind: "bubble", series: ["/", "/blog", "/events", "/docs", "/pricing"], colors: ["#74c4a5", "#5484ec", "#ad8ad7", "#edbe49", "#e87979"] },
 ] as const;
 export type Definition = typeof definitions[number];
 export type Point = { date: string; [key: string]: string | number };
@@ -26,7 +30,7 @@ export function sampleData(id: string, series: readonly string[]): Point[] {
     series.forEach((name, index) => {
       const wave = Math.max(0, Math.sin(day * .57 + index * .7) + .65);
       const spike = day === 4 || day === 22 ? 3.5 : 1;
-      const scale = id === "plugins" ? 55 : id === "skills" ? 6 : id === "traffic" ? 95 : id === "usage" ? 10 : 18;
+      const scale = id === "token-map" ? 24000 : id === "page-health" ? 450 : id === "plugins" ? 55 : id === "skills" ? 6 : (id === "traffic" || id === "visitor-flow") ? 95 : id === "usage" ? 10 : 18;
       if (["roles", "employment", "industries", "backlog"].includes(id)) {
         const counts: Record<string, number[]> = { roles: [310, 245, 82, 285, 160], employment: [590, 280, 45, 167], industries: [390, 245, 160, 130, 95, 62], backlog: [320, 78, 24, 12, 410] };
         point[name] = counts[id][index] + Math.round(day * (index === 0 ? 1.2 : .3));
