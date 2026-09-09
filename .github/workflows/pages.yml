@@ -55,6 +55,17 @@ jobs:
       - name: Test dashboard state and storage
         run: node --test tests/dashboard.test.mjs
 
+      # Playwright downloads its own Chromium; its OS dependencies come from Ubuntu.
+      # An unrelated Google Chrome apt mirror must not block that installation.
+      - name: Exclude unused Google Chrome apt source
+        run: |
+          sudo python3 - <<'PYTHON'
+          from pathlib import Path
+          for source in Path("/etc/apt/sources.list.d").iterdir():
+              if source.suffix in {".list", ".sources"} and "dl.google.com/linux/chrome" in source.read_text():
+                  source.rename(source.with_suffix(source.suffix + ".disabled"))
+          PYTHON
+
       - name: Install browser for interaction checks
         run: pnpm exec playwright install chromium --with-deps
 
