@@ -83,7 +83,7 @@
     --text-mega--line-height: 1.05;
     --tracking-nav: 0.08em;
     --tracking-eyebrow: 0.14em;
-    --font-body: var(--aisocratic-font-body, var(--stoa-font-body, "Space Grotesk", ui-sans-serif, system-ui, sans-serif));
+    --font-body: var(--aisocratic-font-body, var(--stoa-font-body, "Inter", ui-sans-serif, system-ui, sans-serif));
     --font-display: var(--aisocratic-font-display, var(--stoa-font-display, "Newsreader", Georgia, "Times New Roman", serif));
     --font-code: var(--aisocratic-font-code, var(--stoa-font-code, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace));
     --brand-gradient: linear-gradient(135deg, #7c3aed 0%, #a855f7 35%, #ec4899 65%, #f472b6 100%);

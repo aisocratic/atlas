@@ -160,7 +160,7 @@ storage, card execution, authentication and production browser workflows.
 ## License
 
 MIT © AI Socratic. The design system is [`@aisocratic/design`](https://github.com/aisocratic/stoa).
-Fonts are Space Grotesk, Newsreader and JetBrains Mono under the SIL Open Font
+Fonts are Inter, Newsreader and JetBrains Mono under the SIL Open Font
 License 1.1, loaded by the website.
 
 ### Application demo

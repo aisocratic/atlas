@@ -4,9 +4,11 @@
   "license": "OFL-1.1",
   "files": [
     {
-      "file": "space-grotesk.ttf",
-      "source": "https://raw.githubusercontent.com/google/fonts/5e35378e6bda803962ee6fd257e444a7d459660d/ofl/spacegrotesk/SpaceGrotesk%5Bwght%5D.ttf",
-      "sha256": "acad6de1fc93436f5c0f1f4137751ef04f1aea3063e7036535970ffcfbd79f72"
+      "file": "inter.woff2",
+      "repository": "https://github.com/rsms/inter",
+      "revision": "e3a3d4c57d5ecc01453a575621882a384c1995a3",
+      "source": "https://raw.githubusercontent.com/rsms/inter/e3a3d4c57d5ecc01453a575621882a384c1995a3/docs/font-files/InterVariable.woff2",
+      "sha256": "693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
     },
     {
       "file": "newsreader.ttf",
@@ -24,9 +26,11 @@
       "sha256": "48715a42ec242c21e9f02692891e147d022299a52e48d5e413e1a942193ffeda"
     },
     {
-      "file": "spacegrotesk-OFL.txt",
-      "source": "https://raw.githubusercontent.com/google/fonts/5e35378e6bda803962ee6fd257e444a7d459660d/ofl/spacegrotesk/OFL.txt",
-      "sha256": "564ce565c371c5e5bbf286006565a7c9aa55a9f56e7ca58d56e05d649dd61a72"
+      "file": "inter-OFL.txt",
+      "repository": "https://github.com/rsms/inter",
+      "revision": "e3a3d4c57d5ecc01453a575621882a384c1995a3",
+      "source": "https://raw.githubusercontent.com/rsms/inter/e3a3d4c57d5ecc01453a575621882a384c1995a3/LICENSE.txt",
+      "sha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a"
     },
     {
       "file": "newsreader-OFL.txt",

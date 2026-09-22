@@ -26,7 +26,7 @@ const bundle = await build({
   external: ["./fonts/*"],
 });
 await mkdir(path.join(output, "demo/fonts"), { recursive: true });
-for (const name of ["space-grotesk.ttf", "newsreader.ttf", "spacegrotesk-OFL.txt", "newsreader-OFL.txt"]) {
+for (const name of ["inter.woff2", "newsreader.ttf", "inter-OFL.txt", "newsreader-OFL.txt"]) {
   await cp(path.join(root, "app/font-assets", name), path.join(output, "demo/fonts", name));
 }
 const stylesheet = await readFile(path.join(root, "app/globals.css"), "utf8");

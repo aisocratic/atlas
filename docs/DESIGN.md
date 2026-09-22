@@ -21,15 +21,18 @@ to the root `html` element, so portals and all routes inherit them:
 
 | Role | Family | CSS slot | Weights/styles |
 | --- | --- | --- | --- |
-| Body | Space Grotesk | `--aisocratic-font-body` | Variable 300–700, normal |
+| Body | Inter | `--aisocratic-font-body` | Variable 400–700, normal |
 | Display | Newsreader | `--aisocratic-font-display` | 200, normal and true italic |
 | Code | JetBrains Mono | `--aisocratic-font-code` | Variable 400–500, normal |
 
 Original font files and full OFL-1.1 notices are in `app/font-assets/`. The
-manifest pins the Google Fonts repository revision, exact source URLs, and
-SHA-256 hashes for all seven font/license files. Sources are the official
-[Space Grotesk](https://github.com/google/fonts/tree/main/ofl/spacegrotesk),
-[Newsreader](https://github.com/google/fonts/tree/main/ofl/newsreader), and
+manifest pins the source repository revision, exact source URLs, and SHA-256
+hashes for all seven font/license files. Inter is the upstream variable
+`InterVariable.woff2` and `LICENSE.txt` from the
+[rsms/inter](https://github.com/rsms/inter) v4.1 release commit (per-entry
+`repository`/`revision` in the manifest). Newsreader and JetBrains Mono come from
+the official Google Fonts
+[Newsreader](https://github.com/google/fonts/tree/main/ofl/newsreader) and
 [JetBrains Mono](https://github.com/google/fonts/tree/main/ofl/jetbrainsmono)
 directories. No licensed Sentient asset is included. Builds and browser font
 loading require no font-provider network access.

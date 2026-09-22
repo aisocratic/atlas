@@ -3,8 +3,8 @@ import localFont from "next/font/local"
 // Vendored OFL faces keep builds and runtime independent of a font service.
 // Sources, hashes, and the unmodified licenses are in font-assets/.
 export const body = localFont({
-  src: "./font-assets/space-grotesk.ttf",
-  weight: "300 700",
+  src: "./font-assets/inter.woff2",
+  weight: "400 700",
   display: "swap",
   variable: "--aisocratic-font-body",
   fallback: ["Arial", "sans-serif"],

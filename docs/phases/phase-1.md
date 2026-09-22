@@ -8,7 +8,7 @@ Completed 2026-09-05. Design contracts and maintenance instructions are in
 - Direct use of the vendored Stoa `SiteHeader`, `PageHeader`,
   `SegmentedControl`, `Button`, brand `LogoMark`, `MetricCard`, and `cardSurface`.
   The package remains portable through the Phase 0 checked-in archive.
-- `next/font/local` fills all three root `html` slots. Space Grotesk,
+- `next/font/local` fills all three root `html` slots. Inter (formerly Space Grotesk),
   Newsreader normal/italic, and JetBrains Mono are vendored with their original
   OFL-1.1 notices and a pinned source revision/URL/SHA-256 manifest. There is no
   font-provider dependency at build or runtime and no Sentient asset.
