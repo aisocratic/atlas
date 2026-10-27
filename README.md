@@ -102,6 +102,26 @@ in `site/dashboard/storage.mjs` is separate from the canvas state model.
 Cards you don't need are one line in `atlas.config.ts` to disable. A card whose
 requirements aren't met stays on the grid and says why, rather than vanishing.
 
+## Charts to add
+
+Chart types Atlas does not draw yet, taken from a
+[set of dashboard UI blocks](https://x.com/alibey_10/status/2114798612077330719).
+Atlas already has bar, stacked area, line, donut, segmented, ranking, progress,
+gauge, grouped bar, Sankey, weekday × hour heatmap, treemap and bubble charts.
+
+| chart | what it shows | where it fits |
+|---|---|---|
+| Dot-matrix world map | locations as glowing points with route arcs, coloured by health | Region latency: probes by location |
+| Latency histogram | distribution with p50 / p95 / p99 markers, a shaded SLO band, yesterday as a dashed outline, linear/log scale | Region latency, Real users |
+| Trace waterfall | a span tree with nested timing bars and a minimap | a request's server timings |
+| Flame graph | an icicle CPU profile with function search | a profiled render |
+| Service topology | services as nodes, traffic as animated links: width is requests per second, colour is error rate | Errors, by service |
+| Cohort retention heatmap | signup cohorts × months since signup, with a weighted-average row | Real users, newsletter signups |
+| Gantt chart | grouped tasks with owners, dependencies, milestones, a today line and day/week/month zoom | Backlog, Releases |
+| Bullet chart | actual against target over poor → good bands | Lighthouse and Core Web Vitals budgets |
+| A/B result | confidence-interval plot per variant, plus cumulative uplift as a band that narrows over time | experiments, anomalies |
+| Host grid heatmap | one square per host, grouped by region, coloured by load | Region latency, repo or server health |
+
 ## Configuration
 
 `atlas.config.ts` at the repo root: your site URL, which cards are enabled, and
