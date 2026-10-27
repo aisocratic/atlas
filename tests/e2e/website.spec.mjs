@@ -10,7 +10,7 @@ test("product navigation opens the working demo and returns to features", async 
     await page.getByRole("navigation", { name: "Primary", exact: true }).getByRole("link", { name: "Demo", exact: true }).click();
   }
   await expect(page).toHaveURL(/\/demo\/$/);
-  await expect(page.getByRole("article")).toHaveCount(20);
+  await expect(page.getByRole("article")).toHaveCount(21);
   await page.getByRole("combobox", { name: "Dashboard date range", exact: true }).click();
   await page.getByRole("option", { name: "Last 7 days", exact: true }).click();
   await expect(page.getByRole("combobox", { name: "Dashboard date range", exact: true })).toContainText("Last 7 days");
@@ -22,7 +22,7 @@ test("product navigation opens the working demo and returns to features", async 
 
 test("previous preview links still open the interactive dashboard", async ({ page }, testInfo) => {
   await page.goto("/preview/");
-  await expect(page.getByRole("article")).toHaveCount(20);
+  await expect(page.getByRole("article")).toHaveCount(21);
   if (testInfo.project.name === "mobile") await page.getByRole("button", { name: "Open menu", exact: true }).click();
   await expect(page.getByRole("navigation", { name: "Primary", exact: true }).getByRole("link", { name: "Demo", exact: true })).toHaveAttribute("href", "../demo/");
 });
@@ -32,7 +32,7 @@ test("Sankey filters sources, updates the range, and expands", async ({ page }) 
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/demo/");
   await page.locator(".analytics-filters").getByRole("button", { name: "Special charts", exact: true }).click();
-  await expect(page.getByRole("article")).toHaveCount(4);
+  await expect(page.getByRole("article")).toHaveCount(5);
   const card = page.locator('[data-card-id="visitor-flow"]');
   await card.scrollIntoViewIfNeeded();
   await expect(card.locator(".sankey-flow-link").first()).toBeVisible();
@@ -62,7 +62,7 @@ for (const { id, title, selector, names } of [
   page.on("pageerror", error => errors.push(error.message));
   await page.goto("/demo/");
   await page.locator(".analytics-filters").getByRole("button", { name: "Special charts", exact: true }).click();
-  await expect(page.getByRole("article")).toHaveCount(4);
+  await expect(page.getByRole("article")).toHaveCount(5);
   const card = page.locator(`[data-card-id="${id}"]`);
   await card.scrollIntoViewIfNeeded();
   await expect(card.locator(selector).first()).toBeVisible();
@@ -85,6 +85,32 @@ for (const { id, title, selector, names } of [
   await card.getByRole("button", { name: `Expand ${title}`, exact: true }).click();
   await expect(page.getByRole("dialog").locator(selector).first()).toBeVisible();
   await page.keyboard.press("Escape");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test("Releases lane timeline packs lines, zooms, pans and filters by state", async ({ page }) => {
+  const errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.goto("/demo/");
+  await page.locator(".analytics-filters").getByRole("button", { name: "Special charts", exact: true }).click();
+  const card = page.locator('[data-card-id="releases"]');
+  await card.scrollIntoViewIfNeeded();
+  const bars = card.locator(".lane-timeline-bar");
+  await expect(bars).toHaveCount(5);
+  await expect(card.locator(".lane-timeline-labels")).toContainText("v1.x");
+  await expect(card.locator(".lane-timeline-axis")).toContainText("Sample today");
+  await card.locator('.lane-timeline-bar[data-item-id="v1:v1.3"]').hover();
+  await expect(card.getByRole("dialog", { name: "v1.3" })).toContainText("After v1.2");
+  await card.getByRole("button", { name: "30d", exact: true }).click();
+  await expect(bars).toHaveCount(3);
+  await card.getByRole("button", { name: "Earlier", exact: true }).click();
+  await expect(card.locator(".lane-timeline-range")).toBeVisible();
+  await card.getByRole("button", { name: "Sample today", exact: true }).click();
+  await expect(card.locator(".lane-timeline-range")).toHaveCount(0);
+  await card.getByRole("button", { name: "Fit", exact: true }).click();
+  await card.getByRole("button", { name: "Superseded line", exact: true }).click();
+  await expect(bars).toHaveCount(2);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   expect(errors).toEqual([]);
 });

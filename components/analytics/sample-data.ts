@@ -1,3 +1,5 @@
+import type { ReleaseRecord } from "@/lib/charts/release-lanes";
+
 export const definitions = [
   { id: "usage", title: "Personal usage", subtitle: "Daily usage by surface", category: "AI usage", kind: "bar", series: ["Desktop App", "Desktop (Work)", "CLI", "Cloud", "Web", "Mobile"], colors: ["#c73939", "#e25762", "#d650a0", "#354cc5", "#5584e8", "#a385dd"] },
   { id: "turns", title: "Turns", subtitle: "Conversation turns across models and surfaces", category: "AI usage", kind: "area", series: ["gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-5.4-mini", "gpt-6-astra"], colors: ["#cfe0fa", "#4f83ec", "#304e8d", "#bba2de", "#8254d8"] },
@@ -14,6 +16,7 @@ export const definitions = [
   { id: "lighthouse", title: "Lighthouse Summary", subtitle: "Latest mobile audit in range · scores out of 100", category: "Engineering", kind: "gauge", series: ["Performance", "Accessibility", "Best Practices", "SEO"], colors: ["#edbe49", "#74c4a5", "#74c4a5", "#74c4a5"] },
   { id: "signups", title: "Signups", subtitle: "New registrations by account type", category: "Community", kind: "grouped", series: ["Users", "Members"], colors: ["#edbe49", "#72859c"] },
   { id: "errors", title: "Server Errors", subtitle: "Captured error events per period", category: "Engineering", kind: "bar", series: ["Errors"], colors: ["#e87979"] },
+  { id: "releases", title: "Releases", subtitle: "Gantt · release lines by major version, each release marked", category: "Engineering", kind: "timeline", series: ["Current line", "Superseded line", "Prerelease only"], colors: ["#74c4a5", "#72859c", "#edbe49"] },
   { id: "luma", title: "Luma Referrals", subtitle: "Parallel counts for event-referred traffic, not conversion stages", category: "Events", kind: "metrics", series: ["Sessions", "Users", "New Users"], colors: ["#edbe49", "#72859c", "#74c4a5"] },
   { id: "visitor-flow", title: "Visitor flow", subtitle: "Sankey diagram · sources → landing pages → outcomes", category: "Audience", kind: "sankey", series: ["Direct", "Search", "Social", "Referral"], colors: ["#74c4a5", "#5484ec", "#ad8ad7", "#edbe49"] },
   { id: "activity-heatmap", title: "Activity heatmap", subtitle: "AI activity by weekday and hour · UTC", category: "AI usage", kind: "heatmap", series: ["Desktop App", "CLI", "Web"], colors: ["#74c4a5", "#5484ec", "#ad8ad7"] },
@@ -21,6 +24,17 @@ export const definitions = [
   { id: "page-health", title: "Page health", subtitle: "Bubble chart · traffic, load time, and errors", category: "Engineering", kind: "bubble", series: ["/", "/blog", "/events", "/docs", "/pricing"], colors: ["#74c4a5", "#5484ec", "#ad8ad7", "#edbe49", "#e87979"] },
 ] as const;
 export type Definition = typeof definitions[number];
+/** The sample's "today": the last day of its fixed synthetic dates. */
+export const SAMPLE_NOW = Date.UTC(2026, 8, 5, 12);
+// Synthetic releases: two maintained lines at once (backports), and a v2 still in prerelease.
+export const sampleReleases: ReleaseRecord[] = [
+  ["v1.0.0", "2026-03-03"], ["v1.0.1", "2026-03-19"], ["v1.1.0-beta.1", "2026-04-02"], ["v1.1.0", "2026-04-16"], ["v1.1.1", "2026-05-07"],
+  ["v1.2.0-rc.1", "2026-05-28"], ["v1.2.0", "2026-06-11"], ["v1.1.2", "2026-06-24"], ["v1.2.1", "2026-07-09"], ["v1.3.0-beta.1", "2026-07-23"],
+  ["v1.3.0", "2026-08-06"], ["v2.0.0-alpha.1", "2026-08-12"], ["v1.2.2", "2026-08-13"], ["v1.3.1", "2026-08-20"], ["v2.0.0-alpha.2", "2026-08-26"],
+  ["v1.3.2", "2026-09-03"], ["v2.0.0-beta.1", "2026-09-04"],
+].map(([tag, date]) => ({ tag, publishedAt: `${date}T15:00:00.000Z`, prerelease: tag.includes("-") }));
+/** How many sample releases were published from `from` to `to`, both days included. */
+export const releasesBetween = (from: string, to: string) => sampleReleases.filter(release => release.publishedAt.slice(0, 10) >= from && release.publishedAt.slice(0, 10) <= to).length;
 export type Point = { date: string; [key: string]: string | number };
 export const surfaces = ["Desktop App", "CLI", "Cloud", "Web"];
 // Fixed synthetic dates and deterministic values: never presented as live telemetry.

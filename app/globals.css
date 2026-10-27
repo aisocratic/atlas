@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@aisocratic/design/tailwind.css";
+@import "../components/analytics/lane-timeline.css";
 @source "../node_modules/@aisocratic/design/dist";
 
 /* App-specific styles belong below the shared design substrate. */

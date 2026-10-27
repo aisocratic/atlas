@@ -7,7 +7,7 @@ import type { Definition } from "./sample-data";
 
 interface GridState { layout: CanvasLayout; snap: boolean; heights: Record<string, number> }
 interface Gesture { id: string; kind: "move" | "x" | "y" | "both"; startX: number; startY: number; column: number; mobile: boolean; base: GridState; candidate: GridState; tile: Tile; moved: boolean }
-const initial = (entries: readonly Definition[], wide: readonly string[]): GridState => ({ layout: { version: 1, cards: pack(entries.map(d => ({ id: d.id, cardId: d.id, x: 0, y: 0, span: wide.includes(d.id) ? 12 : 6, rows: 9 }))) }, snap: true, heights: {} });
+const initial = (entries: readonly Definition[], wide: readonly string[]): GridState => ({ layout: { version: 1, cards: pack(entries.map(d => ({ id: d.id, cardId: d.id, x: 0, y: 0, span: wide.includes(d.id) || d.kind === "timeline" ? 12 : 6, rows: 9 }))) }, snap: true, heights: {} });
 
 export function PreviewGrid({ entries, view, wide, editing, children }: { entries: readonly Definition[]; view: string; wide: readonly string[]; editing: boolean; children: (definition: Definition) => ReactNode }) {
   const [state, setState] = useState<GridState>(() => initial(entries, wide));

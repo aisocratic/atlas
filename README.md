@@ -38,7 +38,7 @@ python3 -m http.server 4175 --directory dist/pages
 ```
 
 Open http://localhost:4175 for the product overview and http://localhost:4175/demo/
-for the working dashboard with twenty sample cards. The demo needs no account or
+for the working dashboard with twenty-one sample cards. The demo needs no account or
 database. The older `/preview/` URL remains supported, and the original canvas is
 preserved at `/canvas/` with its saved browser layouts.
 
@@ -109,15 +109,22 @@ Chart types Atlas does not draw yet, taken from a
 Atlas already has bar, stacked area, line, donut, segmented, ranking, progress,
 gauge, grouped bar, Sankey, weekday × hour heatmap, treemap and bubble charts.
 
+**Added:** the Gantt chart, as a lane timeline (`components/analytics/lane-timeline.tsx`,
+laid out by `lib/charts/timeline-layout.ts`). It groups items into lanes, packs
+overlapping bars into rows, marks milestones inside a bar, links an item to the
+one it followed, and has a today line and zoom (fit, 30 days, 90 days, a year)
+with panning. Releases uses it first: a lane per major version, a bar per
+release line. It does not show owners, and it zooms by span rather than by a
+day/week/month scale.
+
 | chart | what it shows | where it fits |
 |---|---|---|
 | Dot-matrix world map | locations as glowing points with route arcs, coloured by health | Region latency: probes by location |
 | Latency histogram | distribution with p50 / p95 / p99 markers, a shaded SLO band, yesterday as a dashed outline, linear/log scale | Region latency, Real users |
-| Trace waterfall | a span tree with nested timing bars and a minimap | a request's server timings |
+| Trace waterfall | a span tree with nested timing bars and a minimap | a request's server timings. Partly covered by the lane timeline, which already draws timing bars, packs them into rows and links them; the span tree and minimap are still to do |
 | Flame graph | an icicle CPU profile with function search | a profiled render |
 | Service topology | services as nodes, traffic as animated links: width is requests per second, colour is error rate | Errors, by service |
 | Cohort retention heatmap | signup cohorts × months since signup, with a weighted-average row | Real users, newsletter signups |
-| Gantt chart | grouped tasks with owners, dependencies, milestones, a today line and day/week/month zoom | Backlog, Releases |
 | Bullet chart | actual against target over poor → good bands | Lighthouse and Core Web Vitals budgets |
 | A/B result | confidence-interval plot per variant, plus cumulative uplift as a band that narrows over time | experiments, anomalies |
 | Host grid heatmap | one square per host, grouped by region, coloured by load | Region latency, repo or server health |
