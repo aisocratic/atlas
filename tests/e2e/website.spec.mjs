@@ -157,3 +157,21 @@ test("charts far below the screen draw only as they come near it", async ({ page
   await page.goto("/demo/?card=page-health");
   await expect(page.getByRole("dialog", { name: "Page health" }).locator(".recharts-scatter-symbol").first()).toBeVisible();
 });
+
+test("a layout saved before a card was renamed keeps the card, once, where it was", async ({ page }) => {
+  await page.goto("/demo/");
+  await page.evaluate(() => {
+    localStorage.setItem("atlas-analytics-preview-v1", JSON.stringify({ order: ["performance", "usage", "web-vitals"], wide: ["performance"], favourites: ["performance"] }));
+    localStorage.setItem("atlas-analytics-grid-v1:Favourites", JSON.stringify({ layout: { version: 1, cards: [{ id: "performance", cardId: "performance", x: 0, y: 0, span: 12, rows: 11 }] }, snap: true, heights: {} }));
+  });
+  await page.reload();
+  await expect(page.getByRole("article")).toHaveCount(21);
+  await expect(page.locator('[data-card-id="web-vitals"]')).toHaveCount(1);
+  await page.locator(".analytics-filters").getByRole("button", { name: "Favourites", exact: true }).click();
+  const card = page.locator('[data-card-id="web-vitals"]');
+  await expect(card).toHaveAttribute("style", /--span: 12/);
+  await expect(card).toHaveAttribute("style", /--rows: 11/);
+  await expect(card.getByRole("button", { name: "Unfavourite Core Web Vitals", exact: true })).toBeVisible();
+  await page.goto("/demo/?card=performance");
+  await expect(page.getByRole("dialog", { name: "Core Web Vitals" })).toBeVisible();
+});

@@ -10,6 +10,8 @@ import { api, fetchDataset } from "@/lib/dashboard/client";
 import { useWorkspace } from "./use-workspace";
 import { useExpandedCard } from "../use-expanded-card";
 import { EAGER_CARDS, useNearViewport } from "../use-near-viewport";
+import { cardIdAliases } from "@/cards/aliases";
+import { canonicalCardId } from "@/lib/dashboard/card-ids";
 import "./dashboard.css";
 interface Gesture { id: string; kind: "move" | "resize"; pointerId: number; x: number; y: number; column: number; mobile: boolean; base: CanvasLayout; candidate: CanvasLayout; tile: Tile; centers: number[]; moved: boolean }
 export function DashboardCanvas({ initial, selectedId }: { initial: DashboardView[]; selectedId?: string }) {
@@ -26,7 +28,7 @@ export function DashboardCanvas({ initial, selectedId }: { initial: DashboardVie
   const blocked = save?.state === "conflict"; const saving = save?.state === "saving";
   const cards = active?.layout.cards ?? []; const displayed = preview?.cards ?? cards;
   // Full screen lives in the URL (?card=<tile id>, or a card id, which opens that card's first tile), so Back closes it and the link can be shared.
-  const { expandedId, setExpanded, closeCard } = useExpandedCard({ resolve: id => (cards.find(card => card.id === id) ?? readingOrder(cards).find(card => card.cardId === id))?.id ?? null });
+  const { expandedId, setExpanded, closeCard } = useExpandedCard({ resolve: id => (cards.find(card => card.id === id) ?? readingOrder(cards).find(card => card.cardId === canonicalCardId(id, cardIdAliases)))?.id ?? null });
   // Arranging moves and resizes cards in the grid: nothing to do full screen.
   useEffect(() => { if (editing) closeCard(); }, [editing, closeCard]);
   // Keyboard focus moves into a card as it goes full screen.

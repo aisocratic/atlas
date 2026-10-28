@@ -74,6 +74,12 @@ POST requests have no body; targets and options come from local configuration.
 Responses use `Cache-Control: private, no-store`; reusable caching happens in
 the configured Atlas database rather than in a shared HTTP cache.
 
+To rename a card, rename its folder and id, then add `"old-id": "new-id"` to
+`cards/aliases.ts`. Saved dashboards keep each tile that placed the card and
+show it under the new id; `/api/datasets/<old-id>`, `/cards/<old-id>` and
+`?card=<old-id>` links answer with the renamed card. Stored telemetry and
+collector runs are keyed by card id and are not moved.
+
 `lib/cards/handlers.ts` is the generic route implementation. It authorizes
 reads with action `read` and collection with action `collect` through
 `lib/auth.ts`; no database or configuration access precedes authorization.

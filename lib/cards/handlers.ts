@@ -1,4 +1,6 @@
 import { CardNotFoundError, parseDatasetQuery, type CardServices } from "./service"
+import { cardIdAliases } from "../../cards/aliases"
+import { canonicalCardId } from "../dashboard/card-ids"
 
 export type AuthorizeCards = (request: Request, action: "read" | "collect") => Promise<{ ok: true } | { ok: false; status: number; error: string }>
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "private, no-store" } })
@@ -22,9 +24,11 @@ async function hasEmptyBody(request: Request): Promise<boolean> {
     void reader.cancel().catch(() => {})
   }
 }
-export function createCardHandlers({ authorize, services }: { authorize: AuthorizeCards; services: () => CardServices }) {
+/** A renamed card still answers to its old id. */
+export function createCardHandlers({ authorize, services, aliases = cardIdAliases }: { authorize: AuthorizeCards; services: () => CardServices; aliases?: Readonly<Record<string, string>> }) {
   return {
-    async dataset(request: Request, id: string): Promise<Response> {
+    async dataset(request: Request, requested: string): Promise<Response> {
+      const id = canonicalCardId(requested, aliases)
       const auth = await authorize(request, "read")
       if (!auth.ok) return json({ error: auth.error }, auth.status)
       let query
@@ -36,7 +40,8 @@ export function createCardHandlers({ authorize, services }: { authorize: Authori
         return json({ error: error instanceof CardNotFoundError ? "Unknown card." : "Card configuration could not be loaded." }, error instanceof CardNotFoundError ? 404 : 503)
       }
     },
-    async collect(request: Request, id: string): Promise<Response> {
+    async collect(request: Request, requested: string): Promise<Response> {
+      const id = canonicalCardId(requested, aliases)
       const auth = await authorize(request, "collect")
       if (!auth.ok) return json({ error: auth.error }, auth.status)
       // Targets/options come from trusted local config, never unbounded request JSON.

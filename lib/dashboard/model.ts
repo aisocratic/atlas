@@ -1,4 +1,6 @@
 import type { CardInfo } from "../cards/types";
+import { cardIdAliases } from "../../cards/aliases";
+import { canonicalCardId, type CardIdAliases } from "./card-ids";
 export const GRID = { columns: 12, unit: 42, gap: 12, minSpan: 3, minRows: 4, maxRows: 20 } as const;
 export interface Tile { id: string; cardId: string; x: number; y: number; span: number; rows: number }
 export interface CanvasLayout { version: 1; cards: Tile[] }
@@ -28,7 +30,8 @@ export function pack(cards: Tile[]): Tile[] {
 export function initialLayout(infos: readonly CardInfo[]): CanvasLayout {
   return { version: 1, cards: pack(infos.filter(info => info.defaultEnabled).map(info => ({ id: info.id, cardId: info.id, x: 0, y: 0, span: clamp(info.defaultLayout.width, GRID.minSpan, GRID.columns), rows: clamp(info.defaultLayout.height, GRID.minRows, GRID.maxRows) }))) };
 }
-export function validateLayout(value: unknown): CanvasLayout {
+/** A saved layout, checked; a tile that placed a renamed card now shows the card under its new id. */
+export function validateLayout(value: unknown, aliases: CardIdAliases = cardIdAliases): CanvasLayout {
   if (!value || typeof value !== "object") throw new Error("Invalid dashboard layout.");
   const input = value as CanvasLayout;
   if (input.version !== 1 || !Array.isArray(input.cards) || input.cards.length > 40) throw new Error("A dashboard supports up to 40 cards.");
@@ -37,7 +40,7 @@ export function validateLayout(value: unknown): CanvasLayout {
     if (!card || typeof card !== "object" || typeof card.id !== "string" || !/^[a-zA-Z0-9-]{1,80}$/.test(card.id) || ids.has(card.id) || typeof card.cardId !== "string" || !/^[a-z][a-z0-9-]{0,63}$/.test(card.cardId)) throw new Error("Invalid or duplicate card identity.");
     ids.add(card.id);
     if (![card.x, card.y, card.span, card.rows].every(Number.isInteger) || card.span < GRID.minSpan || card.span > GRID.columns || card.rows < GRID.minRows || card.rows > GRID.maxRows || card.x < 0 || card.x + card.span > GRID.columns || card.y < 0 || card.y > 1800) throw new Error("Card geometry is outside the canvas limits.");
-    return { id: card.id, cardId: card.cardId, x: card.x, y: card.y, span: card.span, rows: card.rows };
+    return { id: card.id, cardId: canonicalCardId(card.cardId, aliases), x: card.x, y: card.y, span: card.span, rows: card.rows };
   });
   if (cards.some((card, index) => cards.slice(index + 1).some(other => overlaps(card, other)))) throw new Error("Cards must not overlap.");
   return { version: 1, cards };

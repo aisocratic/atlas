@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import { ArrowUpToLine, GripVertical, Magnet, MoveDiagonal2, Undo2, Wand2, X } from "lucide-react";
-import { changeCard, GRID, heightFor, pack, readingOrder, reorderCard, validateLayout, type CanvasLayout, type Tile } from "@/lib/dashboard/model";
-import type { Definition } from "./sample-data";
+import { changeCard, GRID, heightFor, pack, readingOrder, reorderCard, type Tile } from "@/lib/dashboard/model";
+import { definitions, renamedCardIds, type Definition } from "./sample-data";
+import { restoreGrid, type GridState } from "./preview-layout";
 import { EAGER_CARDS, useNearViewport } from "../use-near-viewport";
 
-interface GridState { layout: CanvasLayout; snap: boolean; heights: Record<string, number> }
 interface Gesture { id: string; kind: "move" | "x" | "y" | "both"; startX: number; startY: number; column: number; mobile: boolean; base: GridState; candidate: GridState; tile: Tile; moved: boolean }
 const initial = (entries: readonly Definition[], wide: readonly string[]): GridState => ({ layout: { version: 1, cards: pack(entries.map(d => ({ id: d.id, cardId: d.id, x: 0, y: 0, span: wide.includes(d.id) || d.kind === "timeline" ? 12 : 6, rows: 9 }))) }, snap: true, heights: {} });
 
@@ -32,14 +32,8 @@ export function PreviewGrid({ entries, view, wide, editing, expandedId, onClose,
       try {
         const raw = localStorage.getItem(storageKey);
         if (raw) {
-          const saved = JSON.parse(raw) as GridState;
-          const layout = validateLayout(saved.layout);
-          const ids = entryIds.split(",");
-          const cards = layout.cards.filter(card => ids.includes(card.id));
-          const bottom = cards.reduce((max, card) => Math.max(max, card.y + card.rows), 0);
-          ids.filter(id => id && !cards.some(card => card.id === id)).forEach((id, index) => cards.push({ id, cardId: id, x: index % 2 * 6, y: bottom + Math.floor(index / 2) * 9, span: 6, rows: 9 }));
-          const heights = Object.fromEntries(Object.entries(saved.heights ?? {}).filter(([id, value]) => ids.includes(id) && Number.isFinite(value) && value >= 204 && value <= 1068));
-          setState({ layout: { version: 1, cards }, snap: saved.snap !== false, heights });
+          // A card saved under an old id keeps its place under its new one.
+          setState(restoreGrid(JSON.parse(raw), entryIds.split(","), renamedCardIds, id => definitions.find(d => d.id === id)?.kind === "timeline" ? 12 : 6));
         }
       } catch { setNotice("Saved layout could not be read. The default layout is shown."); }
       setReady(true);
