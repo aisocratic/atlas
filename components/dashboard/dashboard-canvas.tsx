@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
-import { GripVertical, MoveDown, MoveUp, Plus, Maximize2, Trash2, Undo2 } from "lucide-react";
+import { Expand, GripVertical, MoveDown, MoveUp, Plus, Maximize2, Minimize2, Trash2, Undo2, X } from "lucide-react";
 import { cardRegistry } from "@/cards/registry";
 import { cardComponents } from "@/cards/components";
 import type { DatasetEnvelope } from "@/lib/cards/types";
@@ -8,6 +8,7 @@ import { GRID, changeCard, heightFor, pack, readingOrder, reorderCard, type Canv
 import type { DashboardView } from "@/lib/dashboard/service";
 import { api, fetchDataset } from "@/lib/dashboard/client";
 import { useWorkspace } from "./use-workspace";
+import { useExpandedCard } from "../use-expanded-card";
 import "./dashboard.css";
 interface Gesture { id: string; kind: "move" | "resize"; pointerId: number; x: number; y: number; column: number; mobile: boolean; base: CanvasLayout; candidate: CanvasLayout; tile: Tile; centers: number[]; moved: boolean }
 export function DashboardCanvas({ initial, selectedId }: { initial: DashboardView[]; selectedId?: string }) {
@@ -15,7 +16,7 @@ export function DashboardCanvas({ initial, selectedId }: { initial: DashboardVie
   const [activeId, setActiveId] = useState(selectedId && initial.some(board => board.id === selectedId) ? selectedId : initial[0]?.id ?? "");
   const [editing, setEditing] = useState(false); const [notice, setNotice] = useState(""); const [busy, setBusy] = useState(false);
   const [dialog, setDialog] = useState<"create" | "rename" | "delete" | null>(null); const [name, setName] = useState("");
-  const dialogRef = useRef<HTMLDialogElement>(null); const gridRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null); const gridRef = useRef<HTMLDivElement>(null); const overlayRef = useRef<HTMLDivElement>(null);
   const gesture = useRef<Gesture | null>(null); const [preview, setPreview] = useState<CanvasLayout | null>(null);
   const datasetGeneration = useRef<Record<string, number>>({}); const collectingRef = useRef<string | null>(null);
   const [datasets, setDatasets] = useState<Record<string, DatasetEnvelope>>({}); const [collecting, setCollecting] = useState<string | null>(null);
@@ -24,6 +25,12 @@ export function DashboardCanvas({ initial, selectedId }: { initial: DashboardVie
   const blocked = save?.state === "conflict"; const saving = save?.state === "saving";
   const cards = active?.layout.cards ?? []; const displayed = preview?.cards ?? cards;
   const cardIds = [...new Set(cards.map(card => card.cardId))].sort().join(",");
+  // Full screen lives in the URL (?card=<tile id>, or a card id, which opens that card's first tile), so Back closes it and the link can be shared.
+  const { expandedId, setExpanded, closeCard } = useExpandedCard({ resolve: id => (cards.find(card => card.id === id) ?? readingOrder(cards).find(card => card.cardId === id))?.id ?? null });
+  // Arranging moves and resizes cards in the grid: nothing to do full screen.
+  useEffect(() => { if (editing) closeCard(); }, [editing, closeCard]);
+  // Keyboard focus moves into a card as it goes full screen.
+  useEffect(() => { if (expandedId) overlayRef.current?.focus(); }, [expandedId]);
   useEffect(() => {
     let cancelled = false; let inflight = false; const controller = new AbortController();
     async function refresh() {
@@ -127,7 +134,7 @@ export function DashboardCanvas({ initial, selectedId }: { initial: DashboardVie
         <div ref={gridRef} className="dashboard-grid">{readingOrder(cards).map((tile, index) => {
           const position = displayed.find(card => card.id === tile.id) ?? tile;
           const info = cardRegistry.find(info => info.id === tile.cardId); const title = `${info?.title ?? "Unavailable card"} ${index + 1}`;
-          const View = cardComponents[tile.cardId]; const dataset = datasets[tile.cardId];
+          const View = cardComponents[tile.cardId]; const dataset = datasets[tile.cardId]; const expanded = expandedId === tile.id;
           const style = { "--column": position.x + 1, "--row": position.y + 1, "--span": position.span, "--rows": position.rows, "--height": `${heightFor(position.rows)}px` } as CSSProperties;
           return <article key={tile.id} data-tile={tile.id} data-card-id={tile.cardId} aria-label={title} className={`dashboard-tile ${editing ? "is-editing" : ""}`} style={style}>
             {editing && <div className="dashboard-tile-tools">
@@ -137,8 +144,14 @@ export function DashboardCanvas({ initial, selectedId }: { initial: DashboardVie
               <button className="dashboard-icon" disabled={blocked || index === cards.length - 1} aria-label={`Move ${title} later`} onClick={() => edit(reorderCard(active.layout, tile.id, index + 1))}><MoveDown size={16} aria-hidden /></button>
               <button className="dashboard-icon" disabled={blocked} aria-label={`Remove ${title}`} onClick={() => edit({ version: 1, cards: cards.filter(card => card.id !== tile.id) })}><Trash2 size={16} aria-hidden /></button>
             </div>}
+            {/* Lift layer: in the grid it adds no box; full screen it becomes the overlay, without remounting the card. */}
+            <div ref={expanded ? overlayRef : undefined} className={expanded ? "dashboard-expanded" : "dashboard-tile-lift"} role={expanded ? "dialog" : undefined} aria-modal={expanded || undefined} aria-label={expanded ? info?.title ?? tile.cardId : undefined} tabIndex={expanded ? -1 : undefined} onClick={expanded ? event => { if (event.target === event.currentTarget) closeCard(); } : undefined}>
+            {expanded && <nav aria-label="Back to dashboard" className="dashboard-expanded-trail"><button onClick={closeCard}>{active.name}</button><span aria-hidden>/</span><span className="text-foreground">{info?.title ?? tile.cardId}</span><button className="dashboard-button ml-auto" onClick={closeCard}><X size={16} aria-hidden />Close</button></nav>}
+            <div className="dashboard-tile-body">
             <div className="dashboard-tile-content">{View && dataset ? <View dataset={dataset} /> : <div className="p-6"><h2 className="text-lead font-medium">{info?.title ?? "Unavailable card"}</h2><p className="mt-3 text-muted-foreground">{View ? "Loading measurements…" : "This card is no longer registered. Remove it or enable its module."}</p></div>}</div>
-            <div className="dashboard-tile-footer"><span className="font-code text-micro text-muted-foreground">{dataset ? dataset.provenance === "synthetic" ? "Synthetic fixture · fixed dates" : dataset.status === "ready" ? dataset.stale ? "Stale measurements" : "Fresh measurements" : dataset.status === "missing-config" ? "Configuration needed" : dataset.status === "error" ? "Dataset error" : dataset.status === "disabled" ? "Disabled" : "No measurements" : "Loading…"}</span>{View && <button className="text-small underline underline-offset-2 disabled:opacity-50" disabled={dataset?.provenance === "synthetic" || collecting !== null || dataset?.status === "disabled" || dataset?.status === "missing-config"} onClick={() => void collect(tile.cardId)}>{collecting === tile.cardId ? "Collecting…" : "Collect now"}</button>}</div>
+            <div className="dashboard-tile-footer"><span className="font-code text-micro text-muted-foreground">{dataset ? dataset.provenance === "synthetic" ? "Synthetic fixture · fixed dates" : dataset.status === "ready" ? dataset.stale ? "Stale measurements" : "Fresh measurements" : dataset.status === "missing-config" ? "Configuration needed" : dataset.status === "error" ? "Dataset error" : dataset.status === "disabled" ? "Disabled" : "No measurements" : "Loading…"}</span><span className="flex items-center gap-3">{View && <button className="text-small underline underline-offset-2 disabled:opacity-50" disabled={dataset?.provenance === "synthetic" || collecting !== null || dataset?.status === "disabled" || dataset?.status === "missing-config"} onClick={() => void collect(tile.cardId)}>{collecting === tile.cardId ? "Collecting…" : "Collect now"}</button>}{!editing && <button className="dashboard-icon" aria-label={expanded ? `Exit full screen ${title}` : `Expand ${title}`} aria-pressed={expanded} title={expanded ? "Exit full screen" : "Full screen"} onClick={() => setExpanded(tile.id, !expanded)}>{expanded ? <Minimize2 size={16} aria-hidden /> : <Expand size={16} aria-hidden />}</button>}</span></div>
+            </div>
+            </div>
             {editing && <div className="dashboard-tile-sizing"><label className="flex items-center gap-2 text-small">Width<select aria-label={`Width of ${title}`} value={tile.span} disabled={blocked} onChange={event => edit(changeCard(active.layout, tile.id, { span: Number(event.target.value) }))}>{[3,4,5,6,7,8,9,10,11,12].map(span => <option key={span} value={span}>{span}/12</option>)}</select></label><label className="flex items-center gap-2 text-small">Height<input aria-label={`Height of ${title}`} type="number" min={4} max={20} value={tile.rows} disabled={blocked} onChange={event => { const rows = Number(event.target.value); if (Number.isInteger(rows) && rows >= 4 && rows <= 20) edit(changeCard(active.layout, tile.id, { rows })); }} /></label><button className="dashboard-handle ml-auto" disabled={blocked} aria-label={`Resize ${title}`} aria-describedby="canvas-instructions" onPointerDown={event => pointerDown(event, tile, "resize")} onPointerMove={pointerMove} onPointerUp={event => pointerEnd(event)} onPointerCancel={event => pointerEnd(event, true)} onLostPointerCapture={event => pointerEnd(event, true)} onKeyDown={event => handleKey(event, tile, "resize")}><Maximize2 size={18} aria-hidden /></button></div>}
           </article>;
         })}</div>

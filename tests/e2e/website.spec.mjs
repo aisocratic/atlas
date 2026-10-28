@@ -114,3 +114,32 @@ test("Releases lane timeline packs lines, zooms, pans and filters by state", asy
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test("a full-screen card has its own link: Back closes it, and its dropdowns open above it", async ({ page }) => {
+  await page.goto("/demo/");
+  const card = page.locator('[data-card-id="releases"]');
+  await card.scrollIntoViewIfNeeded();
+  await card.getByRole("button", { name: "Expand Releases", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Releases" });
+  await expect(dialog).toBeVisible();
+  await expect(page).toHaveURL(/\/demo\/\?card=releases$/);
+  await dialog.getByRole("button", { name: "90d", exact: true }).click();
+  await page.goBack();
+  await expect(dialog).toHaveCount(0);
+  await expect(page).toHaveURL(/\/demo\/$/);
+  // The card kept its state: it was lifted out of the grid, not drawn again.
+  await expect(card.getByRole("button", { name: "90d", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.goto("/demo/?card=turns");
+  const turns = page.getByRole("dialog", { name: "Turns" });
+  await expect(turns).toBeVisible();
+  await turns.getByRole("combobox", { name: "Turns date range" }).click();
+  const option = page.getByRole("option", { name: "Last 7 days", exact: true });
+  await expect(option).toBeVisible();
+  expect(await option.evaluate(element => { const box = element.getBoundingClientRect(); return element.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)); })).toBe(true);
+  await option.click();
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+  await expect(page.locator(".analytics-expanded")).toHaveCount(1);
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".analytics-expanded")).toHaveCount(0);
+  await expect(page).toHaveURL(/\/demo\/$/);
+});

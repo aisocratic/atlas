@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
-import { ArrowUpToLine, GripVertical, Magnet, MoveDiagonal2, Undo2, Wand2 } from "lucide-react";
+import { ArrowUpToLine, GripVertical, Magnet, MoveDiagonal2, Undo2, Wand2, X } from "lucide-react";
 import { changeCard, GRID, heightFor, pack, readingOrder, reorderCard, validateLayout, type CanvasLayout, type Tile } from "@/lib/dashboard/model";
 import type { Definition } from "./sample-data";
 
@@ -9,11 +9,19 @@ interface GridState { layout: CanvasLayout; snap: boolean; heights: Record<strin
 interface Gesture { id: string; kind: "move" | "x" | "y" | "both"; startX: number; startY: number; column: number; mobile: boolean; base: GridState; candidate: GridState; tile: Tile; moved: boolean }
 const initial = (entries: readonly Definition[], wide: readonly string[]): GridState => ({ layout: { version: 1, cards: pack(entries.map(d => ({ id: d.id, cardId: d.id, x: 0, y: 0, span: wide.includes(d.id) || d.kind === "timeline" ? 12 : 6, rows: 9 }))) }, snap: true, heights: {} });
 
-export function PreviewGrid({ entries, view, wide, editing, children }: { entries: readonly Definition[]; view: string; wide: readonly string[]; editing: boolean; children: (definition: Definition) => ReactNode }) {
+// Full screen lifts the card's own content out of the grid rather than drawing
+// it again in a modal, so it keeps its state (series shown, range, zoom). The
+// grid cell keeps its size, so nothing behind it reflows.
+//
+// z-index 50, not higher: Radix selects portal to the end of <body> at z-index
+// 50 and win ties by DOM order. Above them, every card's range dropdown would
+// open behind the full-screen card (the website's admin dashboard had exactly
+// that bug with its overlay at z-[60]).
+export function PreviewGrid({ entries, view, wide, editing, expandedId, onClose, children }: { entries: readonly Definition[]; view: string; wide: readonly string[]; editing: boolean; expandedId: string | null; onClose: () => void; children: (definition: Definition) => ReactNode }) {
   const [state, setState] = useState<GridState>(() => initial(entries, wide));
   const [history, setHistory] = useState<GridState[]>([]), [ready, setReady] = useState(false), [notice, setNotice] = useState("");
   const [preview, setPreview] = useState<GridState | null>(null), [moving, setMoving] = useState<string | null>(null);
-  const grid = useRef<HTMLDivElement>(null), gesture = useRef<Gesture | null>(null);
+  const grid = useRef<HTMLDivElement>(null), gesture = useRef<Gesture | null>(null), overlay = useRef<HTMLDivElement>(null);
   const storageKey = `atlas-analytics-grid-v1:${view}`;
   const entryIds = entries.map(d => d.id).join(",");
   useEffect(() => {
@@ -53,6 +61,8 @@ export function PreviewGrid({ entries, view, wide, editing, children }: { entrie
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [editing, history]);
+  // Keyboard focus moves into a card as it goes full screen.
+  useEffect(() => { if (expandedId) overlay.current?.focus(); }, [expandedId]);
   function commit(next: GridState) { setHistory(previous => [...previous.slice(-29), state]); setState(next); }
   function undo() { if (!history.length) return; setState(history.at(-1)!); setHistory(history.slice(0, -1)); }
   function start(event: PointerEvent<HTMLButtonElement>, tile: Tile, kind: Gesture["kind"]) {
@@ -115,7 +125,10 @@ export function PreviewGrid({ entries, view, wide, editing, children }: { entrie
         const position = displayed.layout.cards.find(card => card.id === tile.id)!;
         const height = displayed.snap ? heightFor(position.rows) : displayed.heights[tile.id] ?? heightFor(position.rows);
         return <article key={tile.id} data-card-id={tile.id} className={`analytics-card preview-grid-card ${editing ? "editing" : ""} ${moving === tile.id ? "is-moving" : ""}`} style={{ "--x": position.x + 1, "--y": position.y + 1, "--span": position.span, "--rows": position.rows, "--card-height": `${height}px` } as CSSProperties}>
-          <div className="preview-grid-content" inert={editing}>{children(d)}</div>
+          <div ref={expandedId === d.id ? overlay : undefined} className={expandedId === d.id ? "analytics-expanded" : "preview-grid-lift"} role={expandedId === d.id ? "dialog" : undefined} aria-modal={expandedId === d.id || undefined} aria-label={expandedId === d.id ? d.title : undefined} tabIndex={expandedId === d.id ? -1 : undefined} onClick={expandedId === d.id ? event => { if (event.target === event.currentTarget) onClose(); } : undefined}>
+            {expandedId === d.id && <nav className="analytics-expanded-trail" aria-label="Back to dashboard"><button onClick={onClose}>Dashboard</button><span aria-hidden>/</span><button onClick={onClose}>{view}</button><span aria-hidden>/</span><span>{d.title}</span><button className="analytics-expanded-close" onClick={onClose}><X size={14} aria-hidden />Close<kbd>Esc</kbd></button></nav>}
+            <div className="preview-grid-content" inert={editing}>{children(d)}</div>
+          </div>
           {editing && <><button className="preview-move-overlay" aria-label={`Move ${d.title} card`} {...handleProps(tile, "move")}><span><GripVertical size={15} />{d.title}</span></button><button className="preview-resize-edge x" aria-label={`Resize ${d.title} width`} {...handleProps(tile, "x")} /><button className="preview-resize-edge y" aria-label={`Resize ${d.title} height`} {...handleProps(tile, "y")} /><button className="preview-resize-corner" aria-label={`Resize ${d.title} card`} {...handleProps(tile, "both")}><MoveDiagonal2 size={16} /></button></>}
         </article>;
       })}

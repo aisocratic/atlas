@@ -26,3 +26,12 @@
 /* Explicit state rules also preserve contrast outside Tailwind's layered utilities. */
 .dashboard-button[aria-selected="true"],.dashboard-button.bg-primary { background:var(--primary); color:var(--primary-foreground); border-color:var(--primary); }
 .dashboard-button[aria-selected="true"]:hover,.dashboard-button.bg-primary:hover { background:var(--primary); opacity:.9; }
+/* Full screen: the tile's own content lifted out of the grid, so it keeps its state; its grid cell keeps its size.
+   z-index 50, not higher: dropdowns portalled to <body> at z-index 50 must still open above it (they win the tie by DOM order). */
+.dashboard-tile-lift,.dashboard-tile-lift>.dashboard-tile-body { display:contents; }
+.dashboard-expanded { position:fixed; inset:0; z-index:50; display:flex; flex-direction:column; gap:.75rem; overflow-y:auto; padding:1rem; background:color-mix(in srgb,var(--background) 95%,transparent); backdrop-filter:blur(4px); outline:none; }
+.dashboard-expanded>.dashboard-tile-body { display:flex; flex-direction:column; flex:none; width:100%; max-width:80rem; margin:0 auto; border:1px solid var(--border); border-radius:var(--radius-xl); background:var(--card); }
+.dashboard-expanded .dashboard-tile-content { overflow:visible; }
+.dashboard-expanded-trail { display:flex; align-items:center; gap:.4rem; width:100%; max-width:80rem; margin:0 auto; font-family:var(--aisocratic-font-code),monospace; font-size:.75rem; color:var(--muted-foreground); }
+.dashboard-expanded-trail>button:not(.dashboard-button):hover { color:var(--foreground); }
+@media(min-width:1024px) { .dashboard-expanded { padding:1.5rem; } }
