@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import { Expand, GripVertical, MoveDown, MoveUp, Plus, Maximize2, Minimize2, Trash2, Undo2, X } from "lucide-react";
 import { cardRegistry } from "@/cards/registry";
 import { cardComponents } from "@/cards/components";
@@ -9,6 +9,7 @@ import type { DashboardView } from "@/lib/dashboard/service";
 import { api, fetchDataset } from "@/lib/dashboard/client";
 import { useWorkspace } from "./use-workspace";
 import { useExpandedCard } from "../use-expanded-card";
+import { EAGER_CARDS, useNearViewport } from "../use-near-viewport";
 import "./dashboard.css";
 interface Gesture { id: string; kind: "move" | "resize"; pointerId: number; x: number; y: number; column: number; mobile: boolean; base: CanvasLayout; candidate: CanvasLayout; tile: Tile; centers: number[]; moved: boolean }
 export function DashboardCanvas({ initial, selectedId }: { initial: DashboardView[]; selectedId?: string }) {
@@ -24,35 +25,53 @@ export function DashboardCanvas({ initial, selectedId }: { initial: DashboardVie
   const save = active ? store.statuses[active.id] : undefined;
   const blocked = save?.state === "conflict"; const saving = save?.state === "saving";
   const cards = active?.layout.cards ?? []; const displayed = preview?.cards ?? cards;
-  const cardIds = [...new Set(cards.map(card => card.cardId))].sort().join(",");
   // Full screen lives in the URL (?card=<tile id>, or a card id, which opens that card's first tile), so Back closes it and the link can be shared.
   const { expandedId, setExpanded, closeCard } = useExpandedCard({ resolve: id => (cards.find(card => card.id === id) ?? readingOrder(cards).find(card => card.cardId === id))?.id ?? null });
   // Arranging moves and resizes cards in the grid: nothing to do full screen.
   useEffect(() => { if (editing) closeCard(); }, [editing, closeCard]);
   // Keyboard focus moves into a card as it goes full screen.
   useEffect(() => { if (expandedId) overlayRef.current?.focus(); }, [expandedId]);
+  // Every card fetches its dataset, so a big board used to fire every request before anyone scrolled.
+  // Tiles past the first screenful load as they come within a screen of the viewport (as on the
+  // website's admin dashboard), and keep refreshing from then on.
+  const tileOrder = readingOrder(cards).map(card => card.id);
+  const near = useNearViewport(gridRef, "data-tile", tileOrder.slice(0, EAGER_CARDS), tileOrder.join(","));
+  const loadIds = [...new Set(cards.filter(card => near.has(card.id) || card.id === expandedId).map(card => card.cardId))].sort().join(",");
+  // What is near now, what has been asked for, and the signal that ends with the component.
+  const wanted = useRef<string[]>([]); const requested = useRef(new Set<string>()); const lifetime = useRef<AbortController | null>(null);
+  const load = useCallback(async (ids: readonly string[]) => {
+    const signal = lifetime.current?.signal; if (!signal) return;
+    await Promise.all(ids.map(async id => {
+      if (collectingRef.current === id) return;
+      const generation = (datasetGeneration.current[id] ?? 0) + 1; datasetGeneration.current[id] = generation;
+      try {
+        const dataset = await fetchDataset(id, signal);
+        if (!signal.aborted && datasetGeneration.current[id] === generation) setDatasets(previous => ({ ...previous, [id]: dataset.status === "error" && !dataset.data && previous[id]?.data ? { ...dataset, data: previous[id].data, updatedAt: previous[id].updatedAt } : dataset }));
+      } catch (error) {
+        if (!signal.aborted && datasetGeneration.current[id] === generation) setDatasets(previous => ({ ...previous, [id]: { ...(previous[id] ?? { id, data: null, updatedAt: null, run: null, cache: { hit: false, expiresAt: null } }), status: "error", stale: true, error: error instanceof Error ? error.message : "Refresh failed. Showing the last available measurements." } }));
+      }
+    }));
+  }, []);
   useEffect(() => {
-    let cancelled = false; let inflight = false; const controller = new AbortController();
+    const controller = new AbortController(); lifetime.current = controller; let inflight = false;
+    // A remount (React's development double run) asks again for whatever is near.
+    requested.current = new Set(wanted.current); if (wanted.current.length) void load(wanted.current);
     async function refresh() {
       if (inflight || document.visibilityState === "hidden") return;
-      inflight = true;
-      await Promise.all(cardIds.split(",").filter(Boolean).map(async id => {
-        if (collectingRef.current === id) return;
-        const generation = (datasetGeneration.current[id] ?? 0) + 1; datasetGeneration.current[id] = generation;
-        try {
-          const dataset = await fetchDataset(id, controller.signal);
-          if (!cancelled && datasetGeneration.current[id] === generation) setDatasets(previous => ({ ...previous, [id]: dataset.status === "error" && !dataset.data && previous[id]?.data ? { ...dataset, data: previous[id].data, updatedAt: previous[id].updatedAt } : dataset }));
-        } catch (error) {
-          if (!cancelled && datasetGeneration.current[id] === generation) setDatasets(previous => ({ ...previous, [id]: { ...(previous[id] ?? { id, data: null, updatedAt: null, run: null, cache: { hit: false, expiresAt: null } }), status: "error", stale: true, error: error instanceof Error ? error.message : "Refresh failed. Showing the last available measurements." } }));
-        }
-      }));
-      inflight = false;
+      inflight = true; await load(wanted.current); inflight = false;
     }
-    void refresh(); const timer = setInterval(() => void refresh(), 60_000);
+    const timer = setInterval(() => void refresh(), 60_000);
     const visible = () => { if (document.visibilityState === "visible") void refresh(); };
     document.addEventListener("visibilitychange", visible);
-    return () => { cancelled = true; controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", visible); };
-  }, [cardIds]);
+    return () => { controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", visible); };
+  }, [load]);
+  // A card that comes near loads at once; the minute timer refreshes it with the rest.
+  useEffect(() => {
+    wanted.current = loadIds.split(",").filter(Boolean);
+    const fresh = wanted.current.filter(id => !requested.current.has(id));
+    fresh.forEach(id => requested.current.add(id));
+    if (fresh.length) void load(fresh);
+  }, [loadIds, load]);
   useEffect(() => {
     const unsaved = Object.values(store.statuses).some(status => status.state !== "saved");
     if (!unsaved) return;
@@ -149,7 +168,7 @@ export function DashboardCanvas({ initial, selectedId }: { initial: DashboardVie
             {expanded && <nav aria-label="Back to dashboard" className="dashboard-expanded-trail"><button onClick={closeCard}>{active.name}</button><span aria-hidden>/</span><span className="text-foreground">{info?.title ?? tile.cardId}</span><button className="dashboard-button ml-auto" onClick={closeCard}><X size={16} aria-hidden />Close</button></nav>}
             <div className="dashboard-tile-body">
             <div className="dashboard-tile-content">{View && dataset ? <View dataset={dataset} /> : <div className="p-6"><h2 className="text-lead font-medium">{info?.title ?? "Unavailable card"}</h2><p className="mt-3 text-muted-foreground">{View ? "Loading measurements…" : "This card is no longer registered. Remove it or enable its module."}</p></div>}</div>
-            <div className="dashboard-tile-footer"><span className="font-code text-micro text-muted-foreground">{dataset ? dataset.provenance === "synthetic" ? "Synthetic fixture · fixed dates" : dataset.status === "ready" ? dataset.stale ? "Stale measurements" : "Fresh measurements" : dataset.status === "missing-config" ? "Configuration needed" : dataset.status === "error" ? "Dataset error" : dataset.status === "disabled" ? "Disabled" : "No measurements" : "Loading…"}</span><span className="flex items-center gap-3">{View && <button className="text-small underline underline-offset-2 disabled:opacity-50" disabled={dataset?.provenance === "synthetic" || collecting !== null || dataset?.status === "disabled" || dataset?.status === "missing-config"} onClick={() => void collect(tile.cardId)}>{collecting === tile.cardId ? "Collecting…" : "Collect now"}</button>}{!editing && <button className="dashboard-icon" aria-label={expanded ? `Exit full screen ${title}` : `Expand ${title}`} aria-pressed={expanded} title={expanded ? "Exit full screen" : "Full screen"} onClick={() => setExpanded(tile.id, !expanded)}>{expanded ? <Minimize2 size={16} aria-hidden /> : <Expand size={16} aria-hidden />}</button>}</span></div>
+            <div className="dashboard-tile-footer"><span className="font-code text-micro text-muted-foreground">{dataset ? dataset.provenance === "synthetic" ? "Synthetic fixture · fixed dates" : dataset.status === "ready" ? dataset.stale ? "Stale measurements" : "Fresh measurements" : dataset.status === "missing-config" ? "Configuration needed" : dataset.status === "error" ? "Dataset error" : dataset.status === "disabled" ? "Disabled" : "No measurements" : "Loading…"}</span><span className="flex items-center gap-3">{View && <button className="text-small underline underline-offset-2 disabled:opacity-50" disabled={!dataset || dataset.provenance === "synthetic" || collecting !== null || dataset?.status === "disabled" || dataset?.status === "missing-config"} onClick={() => void collect(tile.cardId)}>{collecting === tile.cardId ? "Collecting…" : "Collect now"}</button>}{!editing && <button className="dashboard-icon" aria-label={expanded ? `Exit full screen ${title}` : `Expand ${title}`} aria-pressed={expanded} title={expanded ? "Exit full screen" : "Full screen"} onClick={() => setExpanded(tile.id, !expanded)}>{expanded ? <Minimize2 size={16} aria-hidden /> : <Expand size={16} aria-hidden />}</button>}</span></div>
             </div>
             </div>
             {editing && <div className="dashboard-tile-sizing"><label className="flex items-center gap-2 text-small">Width<select aria-label={`Width of ${title}`} value={tile.span} disabled={blocked} onChange={event => edit(changeCard(active.layout, tile.id, { span: Number(event.target.value) }))}>{[3,4,5,6,7,8,9,10,11,12].map(span => <option key={span} value={span}>{span}/12</option>)}</select></label><label className="flex items-center gap-2 text-small">Height<input aria-label={`Height of ${title}`} type="number" min={4} max={20} value={tile.rows} disabled={blocked} onChange={event => { const rows = Number(event.target.value); if (Number.isInteger(rows) && rows >= 4 && rows <= 20) edit(changeCard(active.layout, tile.id, { rows })); }} /></label><button className="dashboard-handle ml-auto" disabled={blocked} aria-label={`Resize ${title}`} aria-describedby="canvas-instructions" onPointerDown={event => pointerDown(event, tile, "resize")} onPointerMove={pointerMove} onPointerUp={event => pointerEnd(event)} onPointerCancel={event => pointerEnd(event, true)} onLostPointerCapture={event => pointerEnd(event, true)} onKeyDown={event => handleKey(event, tile, "resize")}><Maximize2 size={18} aria-hidden /></button></div>}

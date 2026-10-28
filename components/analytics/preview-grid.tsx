@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties, type PointerEvent, typ
 import { ArrowUpToLine, GripVertical, Magnet, MoveDiagonal2, Undo2, Wand2, X } from "lucide-react";
 import { changeCard, GRID, heightFor, pack, readingOrder, reorderCard, validateLayout, type CanvasLayout, type Tile } from "@/lib/dashboard/model";
 import type { Definition } from "./sample-data";
+import { EAGER_CARDS, useNearViewport } from "../use-near-viewport";
 
 interface GridState { layout: CanvasLayout; snap: boolean; heights: Record<string, number> }
 interface Gesture { id: string; kind: "move" | "x" | "y" | "both"; startX: number; startY: number; column: number; mobile: boolean; base: GridState; candidate: GridState; tile: Tile; moved: boolean }
@@ -109,6 +110,9 @@ export function PreviewGrid({ entries, view, wide, editing, expandedId, onClose,
     };
   }
   const displayed = preview ?? state;
+  // Charts past the first screenful draw as they come within a screen of the viewport, so a big board opens faster.
+  const order = readingOrder(state.layout.cards).map(card => card.id);
+  const near = useNearViewport(grid, "data-card-id", order.slice(0, EAGER_CARDS), order.join(","));
   return <section className="preview-canvas" aria-label={`${view} chart layout`}>
     {editing && <><div className="analytics-edit-bar">
       <button title="Organize cards by category and size" onClick={() => { const categories = ["Community", "Audience", "Events", "Engineering", "AI usage"]; const cards = [...state.layout.cards].sort((a, b) => categories.indexOf(entries.find(d => d.id === a.id)!.category) - categories.indexOf(entries.find(d => d.id === b.id)!.category) || b.span - a.span); commit({ ...state, layout: { version: 1, cards: pack(cards) } }); }}><Wand2 size={15} />Auto</button>
@@ -127,7 +131,7 @@ export function PreviewGrid({ entries, view, wide, editing, expandedId, onClose,
         return <article key={tile.id} data-card-id={tile.id} className={`analytics-card preview-grid-card ${editing ? "editing" : ""} ${moving === tile.id ? "is-moving" : ""}`} style={{ "--x": position.x + 1, "--y": position.y + 1, "--span": position.span, "--rows": position.rows, "--card-height": `${height}px` } as CSSProperties}>
           <div ref={expandedId === d.id ? overlay : undefined} className={expandedId === d.id ? "analytics-expanded" : "preview-grid-lift"} role={expandedId === d.id ? "dialog" : undefined} aria-modal={expandedId === d.id || undefined} aria-label={expandedId === d.id ? d.title : undefined} tabIndex={expandedId === d.id ? -1 : undefined} onClick={expandedId === d.id ? event => { if (event.target === event.currentTarget) onClose(); } : undefined}>
             {expandedId === d.id && <nav className="analytics-expanded-trail" aria-label="Back to dashboard"><button onClick={onClose}>Dashboard</button><span aria-hidden>/</span><button onClick={onClose}>{view}</button><span aria-hidden>/</span><span>{d.title}</span><button className="analytics-expanded-close" onClick={onClose}><X size={14} aria-hidden />Close<kbd>Esc</kbd></button></nav>}
-            <div className="preview-grid-content" inert={editing}>{children(d)}</div>
+            <div className="preview-grid-content" inert={editing}>{near.has(d.id) || expandedId === d.id ? children(d) : <div className="preview-grid-pending" aria-hidden />}</div>
           </div>
           {editing && <><button className="preview-move-overlay" aria-label={`Move ${d.title} card`} {...handleProps(tile, "move")}><span><GripVertical size={15} />{d.title}</span></button><button className="preview-resize-edge x" aria-label={`Resize ${d.title} width`} {...handleProps(tile, "x")} /><button className="preview-resize-edge y" aria-label={`Resize ${d.title} height`} {...handleProps(tile, "y")} /><button className="preview-resize-corner" aria-label={`Resize ${d.title} card`} {...handleProps(tile, "both")}><MoveDiagonal2 size={16} /></button></>}
         </article>;

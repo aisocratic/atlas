@@ -143,3 +143,17 @@ test("a full-screen card has its own link: Back closes it, and its dropdowns ope
   await expect(page.locator(".analytics-expanded")).toHaveCount(0);
   await expect(page).toHaveURL(/\/demo\/$/);
 });
+
+test("charts far below the screen draw only as they come near it", async ({ page }) => {
+  await page.goto("/demo/");
+  await expect(page.getByRole("article")).toHaveCount(21);
+  const last = page.locator('[data-card-id="page-health"]');
+  await expect(last.locator(".preview-grid-pending")).toHaveCount(1);
+  expect(await page.locator(".preview-grid-pending").count()).toBeGreaterThan(5);
+  await last.scrollIntoViewIfNeeded();
+  await expect(last.locator(".recharts-scatter-symbol").first()).toBeVisible();
+  await expect(last.locator(".preview-grid-pending")).toHaveCount(0);
+  // A shared full-screen link draws its card at once, wherever it sits.
+  await page.goto("/demo/?card=page-health");
+  await expect(page.getByRole("dialog", { name: "Page health" }).locator(".recharts-scatter-symbol").first()).toBeVisible();
+});
